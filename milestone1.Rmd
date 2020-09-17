@@ -1,0 +1,31 @@
+---
+title: "Milestone 1"
+author: "Emily He"
+date: "9/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+One of the most well known aphorisms in education is "the quality of an 
+education system cannot exceed the quality of its teachers". Thus, much has been
+researched with regard to the competence of teachers and the effectiveness of 
+their teaching. However, there has not been as much focus on how the social 
+status of teachers may play a role in students' outcomes. The Global 
+Teacher Status Index in 2013 was the first international in-depth survey that 
+collected data from 21 countries on details such as how students respect their 
+teachers, where teachers rank among other professions, how high of a salary 
+teachers deserve, etc. The 2018 study analysis released even more information on 
+35 nations, and concluded that both high teacher pay and high status are necessary
+to produce top academic outcomes. For my final project, I would like to use this 
+GTSI2018 data to breakdown relationships between the various factors they 
+surveyed to more comprehensively understand the results.
+
+If something goes amiss with using GTSI2018 data, since I would still like to
+investigate teachers' social status and students' academic outcome, I will use
+data from the National Center of Educational Statistics instead. This data will
+be limited to regions within the U.S., but will still provide multiple factors, 
+such as teacher demand, principals' and teachers' perceptions on school climate, 
+and teacher compensation.
+
