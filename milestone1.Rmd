@@ -20,12 +20,12 @@ teachers deserve, etc. The 2018 study analysis released even more information on
 35 nations, and concluded that both high teacher pay and high status are necessary
 to produce top academic outcomes. For my final project, I would like to use this 
 GTSI2018 data to breakdown relationships between the various factors they 
-surveyed to more comprehensively understand the results.
+surveyed to more comprehensively understand the results. Link here: https://www.scribd.com/document/393301560/gts#download&from_embed
 
 If something goes amiss with using GTSI2018 data, since I would still like to
 investigate teachers' social status and students' academic outcome, I will use
 data from the National Center of Educational Statistics instead. This data will
 be limited to regions within the U.S., but will still provide multiple factors, 
 such as teacher demand, principals' and teachers' perceptions on school climate, 
-and teacher compensation.
+and teacher compensation. Link here: https://nces.ed.gov/surveys/sass/
 
