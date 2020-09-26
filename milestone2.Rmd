@@ -1,0 +1,26 @@
+---
+title: "Milestone 2"
+author: "Emily He"
+date: "9/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Project 1: Students in Schools (Garrett Rolph)
+In his final project, Garrett, being interested in education policy across America, compared educational outcome (using SAT and ACT scores) with schools' operational budgets and demographic makeup. This project was intensive in both data gathering and cleaning, because he went to each State's Department of Education website to retrieve data. He soon realized that due to privacy concerns, data could not be parsed from all 50 states, and so he limited his analysis to only 20. He then proceeded to divide his graphs by region, where he compared students' ACT/SAT scores to amounts such as teacher salary, and school expenditure. He also had a tab where he compared demographics to student outcome (using ACT/SAT scores).
+
+Pros of this project include regression lines, as since the data is scattered, having a trend line makes data easier to read. However, a lot of the graphs were rather unorganized. For example, in the 'South' tab, there's information on superintendent salaries, expenditures, teacher salaries, and financial value, but in no particular order. This data was also only for individual states, so there was no opportunity for comparison among states. There also was no explanation accompanying the graphs, making it seem like a data dump instead of data interpretation. Additionally, the sizing of the graphs were off as it seems some were minimized to make room for other plots. Overall, more emphasis on consistency, interpretation, and aesthetics would have made this seem a more professional project.
+
+### Project 2: Social Connectedness in the Class of 2023
+In comparison to Garrett's project, this project was very polished in terms of data analysis, explanation, and aesthetics. This could also be because there seems to have been a team of creators/authors instead of a single individual. In analyzing the social dynamics of first years (i.e. do common interests determine who you make friends with? Or is it due to proximity?), they first plotted the results of the survey they conducted. They accounted for response bias and plotted the results clearly. They also had a complex animated web that visualized how students are connected, which is extremely relevant since they are investigating student networks. They even went into calculating eigenvector centrality to identify individuals with influence over the whole network, not just those directly connected.
+
+The one con I will mention is that because there is so much data being analyzed, readers can easily lose track of what's being analyzed and what the key takeways are. There is a summary tab, but perhaps they could add a conclusion to each tab summarizing their key findings in addition to their in-depth explanations corresponding to each figure.
+
+#### Github repo link
+https://github.com/2022ehe/gov50-finalproject
+
+I created this repository as a private one, as there isn't a product I would like to showcase to the public right now. When I tried changing it to public, so the TF viewing this (I'm assuming it's you, Juan!) can see my repo, Github told me it was dangerous and that I might lose information. Thus, I did not proceed. Please let me know how else I can give you visibility access! I can assure you though that this repo does indeed exist.
+
