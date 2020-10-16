@@ -1,0 +1,76 @@
+---
+title: "Gathering Data"
+author: "Emily He"
+date: "10/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(readxl)
+```
+
+```{r nces}
+degrees <- read_excel("nces_data/tabn209.10.xls", skip = 3)
+
+View(degrees)
+  
+  
+```
+```{r sass}
+
+# Load in certification data from SASS
+certification <- read_excel("sass_data/sass1112_18042404_t2n.xlsx", skip = 3,
+                            col_types = c('text', 
+                                          'numeric', 
+                                          'skip',
+                                          'numeric', 
+                                          'skip', 
+                                          'numeric', 
+                                          'skip', 
+                                          'numeric', 
+                                          'skip', 
+                                          'numeric', 
+                                          'skip'),
+                            col_names = c('level_subject', 
+                                          'cert_total', 
+                                          'cert_major', 
+                                          'cert_only', 
+                                          'major_only', 
+                                          'neither'))
+
+# Select middle school data
+ms <- certification %>%
+  slice(2:6) %>%
+  select(-cert_total) %>%
+  pivot_longer(cols = -level_subject, 
+               names_to = 'qualification', 
+               values_to = 'percentage') %>%
+  drop_na() %>%
+  filter(level_subject != 'General elementary education')
+
+# Plot middle school data
+ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) + 
+  geom_col(position = 'dodge') + 
+  scale_fill_brewer(name = 'Teacher Qualification', 
+                    labels = c('Certification and Related Major',
+                               'Certification Only',
+                               'Related Major Only', 
+                               'Neither Qualification'),
+                    palette = 'Blues') + 
+  theme_bw() +
+  labs(title = 'Percentage of U.S. Middle Grade Students Taught By 
+  Teachers with Various Qualifications in 2011-2012',
+       subtitle = 'A majority of students are taught by science teachers without state 
+  certifications or a related academic major.',
+       x = 'Class Subject',
+       y = 'Percentage of Students',
+       caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+
+hs <- certification %>%
+  slice(9:12)
+```
+
+
+
