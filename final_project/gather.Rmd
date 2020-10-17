@@ -12,12 +12,10 @@ library(readxl)
 ```
 
 ```{r nces}
-degrees <- read_excel("nces_data/tabn209.10.xls", skip = 3)
-
-View(degrees)
-  
-  
+# degrees <- read_excel("nces_data/tabn209.10.xls", skip = 3)
+# View(degrees)
 ```
+
 ```{r sass}
 
 # Load in certification data from SASS
@@ -60,7 +58,7 @@ ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) +
                                'Neither Qualification'),
                     palette = 'Blues') + 
   theme_bw() +
-  labs(title = 'Percentage of U.S. Middle Grade Students Taught By 
+  labs(title = 'Percentage of U.S. Middle School Students Taught By 
   Teachers with Various Qualifications in 2011-2012',
        subtitle = 'A majority of students are taught by science teachers without state 
   certifications or a related academic major.',
@@ -68,8 +66,39 @@ ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) +
        y = 'Percentage of Students',
        caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
 
+```
+```{r}
+# Curate high school data
 hs <- certification %>%
-  slice(9:12)
+  slice(9:12) %>%
+  select(-cert_total) %>%
+  pivot_longer(cols = -level_subject, 
+               names_to = 'qualification', 
+               values_to = 'percentage') %>%
+  drop_na() %>%
+  filter(level_subject != 'General elementary education')
+
+ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) + 
+  geom_col(position = 'dodge') + 
+  scale_fill_brewer(name = 'Teacher Qualification', 
+                    labels = c('Certification and Related Major',
+                               'Certification Only',
+                               'Related Major Only', 
+                               'Neither Qualification'),
+                    palette = 'Blues') + 
+  theme_bw() +
+  labs(title = 'Percentage of U.S. High School Students Taught By 
+  Teachers with Various Qualifications in 2011-2012',
+       subtitle = 'A majority of students are taught by science teachers without state 
+  certifications or a related academic major.',
+       x = 'Class Subject',
+       y = 'Percentage of Students',
+       caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+```
+
+```{r}
+saveRDS(ms, "ms_cert.RDS")
+saveRDS(hs, "hs_cert.RDS")
 ```
 
 
