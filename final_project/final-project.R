@@ -90,12 +90,12 @@ server <- function(input, output) {
       # If input$plot_type is "a", plot bar graph of percentage of middle 
       # school students taught by teachers of various qualification levels
       
-      x <- ms,
+      x <- ms_cert,
       
       # If input$plot_type is "b", plot bar graph of percentage of middle 
       # school students taught by teachers of various qualification levels
       
-      x <- hs
+      x <- hs_cert
     )
    ggplot(x, aes(x = level_subject, y = percentage, fill = qualification)) + 
     geom_col(position = 'dodge') + 

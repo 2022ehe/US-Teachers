@@ -5,9 +5,9 @@ account: ehe2022
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3006345
-bundleId: 3750978
+bundleId: 3751003
 url: https://ehe2022.shinyapps.io/final_project/
-when: 1602898213.08669
+when: 1602898691.34943
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: sass_data/.DS_Store
+ignoredFiles: gather.Rmd|nces_data/.DS_Store|sass_data/.DS_Store
