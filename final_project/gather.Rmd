@@ -11,12 +11,7 @@ library(tidyverse)
 library(readxl)
 ```
 
-```{r nces}
-# degrees <- read_excel("nces_data/tabn209.10.xls", skip = 3)
-# View(degrees)
-```
-
-```{r sass}
+```{r sass ms}
 
 # Load in certification data from SASS
 certification <- read_excel("sass_data/sass1112_18042404_t2n.xlsx", skip = 3,
@@ -37,6 +32,7 @@ certification <- read_excel("sass_data/sass1112_18042404_t2n.xlsx", skip = 3,
                                           'cert_only', 
                                           'major_only', 
                                           'neither'))
+# certification$...2 <- as.numeric(certification$...2)
 
 # Select middle school data
 ms <- certification %>%
@@ -67,7 +63,8 @@ ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) +
        caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
 
 ```
-```{r}
+
+```{r sass hs}
 # Curate high school data
 hs <- certification %>%
   slice(9:12) %>%
@@ -96,9 +93,74 @@ ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) +
        caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
 ```
 
-```{r}
+```{r rds}
 saveRDS(ms, "ms_cert.RDS")
 saveRDS(hs, "hs_cert.RDS")
+```
+
+```{r nces}
+tabn209_10 <- read_excel("nces_data/tabn209.10.xls", 
+                         skip = 5,
+    col_types = c("text", "numeric", "skip", 
+        "numeric", "numeric", "skip", "numeric", "numeric", 
+        "skip", "numeric", "numeric", "skip", "numeric", 
+        "numeric", "skip", "numeric", "numeric", "skip", 
+        "numeric", "numeric", "skip", "numeric", "numeric", 
+        "skip", "numeric", "numeric", "skip", "numeric", 
+        "numeric", "skip", "numeric", "numeric", "skip", 
+        "numeric", "numeric", "skip", "numeric", "numeric", 
+        "skip", "numeric", "numeric", "skip", "numeric"),
+    col_names = c('teacher_char', '1987-88_n', '1987-88_n_se', 
+                  '1990-91_n', '1990-91_n_se', '1999-2000_n', '1999-2000_n_se', 
+                  '2003-04_n', '2003-04_n_se', '2007-08_n', '2007-08_n_se', 
+                  '2011-12_n', '2011-12_n_se','2017-18_n','2017-18_n_se', 
+                  '1987-88_p', '1987-88_p_se',
+                  '1990-91_p', '1990-91_p_se', '1999-2000_p', '1999-2000_p_se', 
+                  '2003-04_p', '2003-04_p_se', '2007-08_p', '2007-08_p_se', 
+                  '2011-12_p', '2011-12_p_se','2017-18_p','2017-18_p_se'))
+
+public <- tabn209_10 %>%
+  slice(1:53)
+
+private <- tabn209_10 %>%
+  slice(54:86)
+                  
+```
+
+```{r public}
+# Percentage values for public schools across all years
+public_age_p <- public %>%
+  slice(15:19) %>%
+  select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
+           `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  rename_with(~tolower(gsub("_p", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
+
+# Percentage standard error values for public schools across all years
+public_age_p_se <- public %>%
+  slice(15:19) %>%
+  select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
+           `2003-04_p_se`,`2007-08_p_se`, `2011-12_p_se`, `2017-18_p_se`)) %>%
+  rename_with(~tolower(gsub("_p_se", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
+
+# Merged tibble for percentage + standard errors
+public_age_join <- left_join(public_age_p, 
+                             public_age_p_se, 
+                             by = c('year', 'teacher_char')) %>%
+  mutate(max = percentage + se,
+         min = percentage - se)
+
+public_age_join %>%
+  filter(teacher_char == 'Under 30') %>%
+  ggplot(aes(x = year, y = percentage)) + 
+  geom_point() + 
+  geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                width=0.1, alpha=0.9, size=1.3) + 
+  labs(title = 'Age Ranges of U.S. Teachers in Public Schools from 1987-2018',
+       x = 'Year',
+       y = 'Percentage of Teachers')
+
 ```
 
 
