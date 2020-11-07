@@ -14,6 +14,7 @@ library(shinythemes)
 # Reads in data
 ms_cert <- readRDS("ms_cert.RDS")
 hs_cert <- readRDS("hs_cert.RDS")
+public_age <- readRDS("public_age.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -61,6 +62,28 @@ ui <- navbarPage(
                  )),
                mainPanel(plotOutput("cert_plot")))
            )),
+  
+  tabPanel("Teacher Age Ranges",
+           fluidPage(
+             titlePanel("Age of U.S. Teachers in Public Schools from 1987-2018"),
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput(
+                   "plot_type_age",
+                   "Age Range",
+                   c("Under 30" = "a", 
+                     "30 to 39" = "b", 
+                     "40 to 49" = "c",
+                     "50 to 59" = "d",
+                     "60 and over" = "e")
+                 )),
+               mainPanel(plotOutput("public_age_plot")))
+           )),
+  
+  # tabPanel("Test",
+  #          h2("Teacher Age Data"),
+  #          DT::dataTableOutput("my_table")),
+  
   tabPanel("Discussion",
            titlePanel("Why I Chose this Data"),
            p("To start out, I thought modeling Teacher Qualifications would
@@ -81,6 +104,53 @@ ui <- navbarPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  output$public_age_plot <- renderPlot({
+    # Generate type based on input$plot_type from ui
+    
+    # ifelse(
+    #   input$plot_type_age == "a",
+    #   x <- public_age %>%
+    #         filter(teacher_char == 'Under 30'),
+    #   x <- public_age %>%
+    #         filter(teacher_char == '30 to 39')
+    # )
+    data <- switch(input$plot_type_age, 
+                   "a" = public_age %>%
+                      filter(teacher_char == 'Under 30'),
+                   "b" = public_age %>%
+                     filter(teacher_char == '30 to 39'),
+                   "c" = public_age %>%
+                     filter(teacher_char == '40 to 49'),
+                   "d" = public_age %>%
+                     filter(teacher_char == '50 to 59'),
+                   "e" = public_age %>%
+                     filter(teacher_char == '60 and over'))
+    # case_when(
+    #   input$plot_type_age == 'a' ~ (data <- public_age %>%
+    #                               filter(teacher_char == 'Under 30')),
+    #   input$plot_type_age == 'b' ~ (data <- public_age %>%
+    #                               filter(teacher_char == '30 to 39')),
+    #   input$plot_type_age == 'c' ~ (data <- public_age %>%
+    #                               filter(teacher_char == '40 to 49')),
+    #   input$plot_type_age == 'd' ~ (data <- public_age %>%
+    #                               filter(teacher_char == '50 to 59')),
+    #   input$plot_type_age == 'e' ~ (data <- public_age %>%
+    #                               filter(teacher_char == '60 and over')),
+    #   TRUE ~ (data <- public_age %>%
+    #             filter(teacher_char == 'Under 30'))
+    # )
+
+    ggplot(data, aes(x = year, y = percentage)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, color = 'dodgerblue', alpha=0.9, size=1) + 
+      labs(title = 'Age Ranges of U.S. Teachers in Public Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+    
+  })
+  
   output$cert_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
     
@@ -112,6 +182,10 @@ server <- function(input, output) {
 
     
   })
+  # output$my_table <- DT::renderDataTable({
+  #   public_age
+  # })
+
 }
 
 # Run the application 

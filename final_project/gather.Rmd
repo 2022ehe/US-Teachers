@@ -96,6 +96,7 @@ ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) +
 ```{r rds}
 saveRDS(ms, "ms_cert.RDS")
 saveRDS(hs, "hs_cert.RDS")
+saveRDS(public_age_join, 'public_age.RDS')
 ```
 
 ```{r nces}
@@ -152,11 +153,11 @@ public_age_join <- left_join(public_age_p,
          min = percentage - se)
 
 public_age_join %>%
-  filter(teacher_char == 'Under 30') %>%
+  filter(teacher_char == '40 to 49') %>%
   ggplot(aes(x = year, y = percentage)) + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_errorbar(aes(x = year, ymin = min, ymax = max), 
-                width=0.1, alpha=0.9, size=1.3) + 
+                width=0.1, color = 'dodgerblue', alpha=0.9, size=1) + 
   labs(title = 'Age Ranges of U.S. Teachers in Public Schools from 1987-2018',
        x = 'Year',
        y = 'Percentage of Teachers')
