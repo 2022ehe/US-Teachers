@@ -131,7 +131,7 @@ private <- tabn209_10 %>%
                   
 ```
 
-```{r public}
+```{r public age}
 # Percentage values for public schools across all years
 public_age_p <- public %>%
   slice(15:19) %>%
@@ -168,7 +168,7 @@ public_age_join %>%
 
 ```
 
-```{r private}
+```{r private age}
 # Percentage values for public schools across all years
 private_age_p <- private %>%
   slice(15:19) %>%
@@ -195,7 +195,7 @@ private_age_join <- left_join(private_age_p,
 
 ```
 
-```{r public + private}
+```{r public age+ private age}
 age <- bind_rows(private_age_join, public_age_join)
 
 age_plot <- age %>%

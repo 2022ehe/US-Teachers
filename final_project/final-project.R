@@ -51,30 +51,19 @@ ui <- navbarPage(
            Survey. Although only based in the U.S., the SASS provides
            comprehensive, standardized data on schools across the nation.")),
   
-  tabPanel("Teacher Qualifications",
-           fluidPage(
-             titlePanel("Percentage of U.S. Students Taught by Teachers with
-                        Various Qualifications in 2011-2012"),
-             sidebarLayout(
-               sidebarPanel(
-                 selectInput(
-                   "plot_type",
-                   "Grade Level",
-                   c("Middle School (Grades 6-8)" = "a", 
-                     "High School (Grades 9-12)" = "b")
-                 )),
-               mainPanel(plotOutput("cert_plot")))
-           )),
-  
   tabPanel("Teacher Age Ranges",
            fluidPage(
              titlePanel("Age of Teachers in U.S. Schools from 1987-2018"),
-             imageOutput("animated_age_plot", 
-                         height = "100%",
-                         width = "100%")),
              fluidRow(
+               column(12, 
+                      imageOutput("animated_age_plot", 
+                                  height = "100%",
+                                  width = "100%"),
+                      align = "center"),
+               br(),
+               br(),
+               h3("Explore the Data"),
                column(4,
-                      h4("Explore the Data"),
                       selectInput(
                         "plot_type_age",
                         "Age Range",
@@ -87,7 +76,7 @@ ui <- navbarPage(
                column(7, plotOutput("public_age_plot"),
                           plotOutput("private_age_plot"),
                       align = "center")
-             )),
+             ))),
              # sidebarLayout(position = "left",
              #   sidebarPanel(
              #     selectInput(
@@ -107,6 +96,21 @@ ui <- navbarPage(
   # tabPanel("Test",
   #          h2("Teacher Age Data"),
   #          DT::dataTableOutput("my_table")),
+  
+  tabPanel("Teacher Qualifications",
+           fluidPage(
+             titlePanel("Percentage of U.S. Students Taught by Teachers with
+                        Various Qualifications in 2011-2012"),
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput(
+                   "plot_type",
+                   "Grade Level",
+                   c("Middle School (Grades 6-8)" = "a", 
+                     "High School (Grades 9-12)" = "b")
+                 )),
+               mainPanel(plotOutput("cert_plot")))
+           )),
   
   tabPanel("Discussion",
            titlePanel("Why I Chose this Data"),
