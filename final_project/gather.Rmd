@@ -308,6 +308,14 @@ public_years_join <- left_join(public_years_p,
   mutate(max = percentage + se,
          min = percentage - se) %>%
   mutate(type = "Public")
+
+ggplot(public_years_join, aes(x = year, y = percentage, color = teacher_char)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(x = year, ymin = min, ymax = max),
+                width=0.1, alpha=0.9, size=1) +
+  labs(title = 'Years of Teaching Experience of U.S. Teachers in Public Schools from 1987-2018',
+       x = 'Year',
+       y = 'Percentage of Teachers')
 ```
 ```{r years_private}
 # Percentage values for private schools across all years

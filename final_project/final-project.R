@@ -20,6 +20,8 @@ private_age <- readRDS("private_age.RDS")
 age_plot <- readRDS("age.RDS")
 public_degree <- readRDS("public_degree.RDS")
 private_degree <- readRDS("private_degree.RDS")
+public_years <- readRDS("public_years.RDS")
+private_years <- readRDS("private_years.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -101,7 +103,7 @@ ui <- navbarPage(
   
   tabPanel("Teacher Qualifications",
            fluidPage(
-             titlePanel(),
+             titlePanel("Teacher Qualifications"),
              fluidRow(
                column(3,
                       selectInput(
@@ -114,12 +116,31 @@ ui <- navbarPage(
                           "Doctor's" = "e")),
                       align = "left"
                ),
-               column(7, plotOutput("public_degree_plot"),
+               column(7, 
+                      plotOutput("public_degree_plot"),
                       plotOutput("private_degree_plot"),
                       align = "center"),
                br(),
-               h1("Percentage of U.S. Students Taught by Teachers with
+               column(3, 
+                      selectInput(
+                        "plot_type_years",
+                        "Years of Teaching Experience",
+                        c("Less than 3" = "a", 
+                          "3 to 9" = "b", 
+                          "10 to 20" = "c",
+                          "Over 20" = "d")),
+                      align = "left"
+               ),
+               column(7, 
+                      plotOutput("public_years_plot"),
+                      plotOutput("private_years_plot"),
+                      align = "center"),
+               br(),
+               column(12,
+                      h4("Percentage of U.S. Students Taught by Teachers with
                         Various Qualifications in 2011-2012"),
+                      align = "left"),
+               br(),
                column(4, 
                       selectInput(
                         "plot_type",
@@ -264,6 +285,50 @@ server <- function(input, output) {
       geom_errorbar(aes(x = year, ymin = min, ymax = max), 
                     width=0.1, color = 'green', alpha=0.9, size=1) + 
       labs(title = 'Highest Degree Earned for U.S. Teachers in Private Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+  })
+  
+  output$public_years_plot <- renderPlot({
+    
+    public_data <- switch(input$plot_type_years, 
+                           "a" = public_years %>%
+                             filter(teacher_char == "Less than 3"),
+                           "b" = public_years %>%
+                             filter(teacher_char == "3 to 9"),
+                           "c" = public_years %>%
+                             filter(teacher_char == "10 to 20"),
+                           "d" = public_years %>%
+                             filter(teacher_char == "Over 20"))
+    
+    ggplot(public_data, aes(x = year, y = percentage)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, color = 'blue', alpha=0.9, size=1) + 
+      labs(title = 'Years of Teaching Experience for U.S. Teachers in Public Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+  })
+  
+  output$private_years_plot <- renderPlot({
+    
+    private_data <- switch(input$plot_type_years, 
+                           "a" = private_years %>%
+                             filter(teacher_char == "Less than 3"),
+                           "b" = private_years %>%
+                             filter(teacher_char == "3 to 9"),
+                           "c" = private_years %>%
+                             filter(teacher_char == "10 to 20"),
+                           "d" = private_years %>%
+                             filter(teacher_char == "Over 20"))
+    
+    ggplot(private_data, aes(x = year, y = percentage)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, color = 'blue', alpha=0.9, size=1) + 
+      labs(title = 'Years of Teaching Experience for U.S. Teachers in Private Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
