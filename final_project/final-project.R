@@ -10,11 +10,14 @@
 library(shiny)
 library(tidyverse)
 library(shinythemes)
+library(gganimate)
 
 # Reads in data
 ms_cert <- readRDS("ms_cert.RDS")
 hs_cert <- readRDS("hs_cert.RDS")
 public_age <- readRDS("public_age.RDS")
+private_age <- readRDS("private_age.RDS")
+age_plot <- readRDS("age.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -65,20 +68,41 @@ ui <- navbarPage(
   
   tabPanel("Teacher Age Ranges",
            fluidPage(
-             titlePanel("Age of U.S. Teachers in Public Schools from 1987-2018"),
-             sidebarLayout(
-               sidebarPanel(
-                 selectInput(
-                   "plot_type_age",
-                   "Age Range",
-                   c("Under 30" = "a", 
-                     "30 to 39" = "b", 
-                     "40 to 49" = "c",
-                     "50 to 59" = "d",
-                     "60 and over" = "e")
-                 )),
-               mainPanel(plotOutput("public_age_plot")))
-           )),
+             titlePanel("Age of Teachers in U.S. Schools from 1987-2018"),
+             imageOutput("animated_age_plot", 
+                         height = "100%",
+                         width = "100%")),
+             fluidRow(
+               column(4,
+                      h4("Explore the Data"),
+                      selectInput(
+                        "plot_type_age",
+                        "Age Range",
+                        c("Under 30" = "a", 
+                          "30 to 39" = "b", 
+                          "40 to 49" = "c",
+                          "50 to 59" = "d",
+                          "60 and over" = "e"))
+                ),
+               column(7, plotOutput("public_age_plot"),
+                          plotOutput("private_age_plot"),
+                      align = "center")
+             )),
+             # sidebarLayout(position = "left",
+             #   sidebarPanel(
+             #     selectInput(
+             #       "plot_type_age",
+             #       "Age Range",
+             #       c("Under 30" = "a", 
+             #         "30 to 39" = "b", 
+             #         "40 to 49" = "c",
+             #         "50 to 59" = "d",
+             #         "60 and over" = "e")
+             #     )),
+             #   mainPanel(plotOutput("public_age_plot"),
+             #             plotOutput("private_age_plot"),
+             #             ))
+           #)),
   
   # tabPanel("Test",
   #          h2("Teacher Age Data"),
@@ -106,15 +130,8 @@ ui <- navbarPage(
 server <- function(input, output) {
   output$public_age_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
-    
-    # ifelse(
-    #   input$plot_type_age == "a",
-    #   x <- public_age %>%
-    #         filter(teacher_char == 'Under 30'),
-    #   x <- public_age %>%
-    #         filter(teacher_char == '30 to 39')
-    # )
-    data <- switch(input$plot_type_age, 
+
+    public_data <- switch(input$plot_type_age, 
                    "a" = public_age %>%
                       filter(teacher_char == 'Under 30'),
                    "b" = public_age %>%
@@ -125,22 +142,8 @@ server <- function(input, output) {
                      filter(teacher_char == '50 to 59'),
                    "e" = public_age %>%
                      filter(teacher_char == '60 and over'))
-    # case_when(
-    #   input$plot_type_age == 'a' ~ (data <- public_age %>%
-    #                               filter(teacher_char == 'Under 30')),
-    #   input$plot_type_age == 'b' ~ (data <- public_age %>%
-    #                               filter(teacher_char == '30 to 39')),
-    #   input$plot_type_age == 'c' ~ (data <- public_age %>%
-    #                               filter(teacher_char == '40 to 49')),
-    #   input$plot_type_age == 'd' ~ (data <- public_age %>%
-    #                               filter(teacher_char == '50 to 59')),
-    #   input$plot_type_age == 'e' ~ (data <- public_age %>%
-    #                               filter(teacher_char == '60 and over')),
-    #   TRUE ~ (data <- public_age %>%
-    #             filter(teacher_char == 'Under 30'))
-    # )
 
-    ggplot(data, aes(x = year, y = percentage)) + 
+    ggplot(public_data, aes(x = year, y = percentage)) + 
       geom_point(size = 2) + 
       geom_errorbar(aes(x = year, ymin = min, ymax = max), 
                     width=0.1, color = 'dodgerblue', alpha=0.9, size=1) + 
@@ -148,8 +151,40 @@ server <- function(input, output) {
            x = 'Year',
            y = 'Percentage of Teachers', 
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
-    
   })
+  
+  output$private_age_plot <- renderPlot({
+    
+    private_data <- switch(input$plot_type_age, 
+                           "a" = private_age %>%
+                             filter(teacher_char == 'Under 30'),
+                           "b" = private_age %>%
+                             filter(teacher_char == '30 to 39'),
+                           "c" = private_age %>%
+                             filter(teacher_char == '40 to 49'),
+                           "d" = private_age %>%
+                             filter(teacher_char == '50 to 59'),
+                           "e" = private_age %>%
+                             filter(teacher_char == '60 and over'))
+    
+    ggplot(private_data, aes(x = year, y = percentage)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, color = 'dodgerblue', alpha=0.9, size=1) + 
+      labs(title = 'Age Ranges of U.S. Teachers in Private Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+  })
+  
+  output$animated_age_plot <- renderImage({
+    # Return a list containing the filename
+    list(src = "age.gif",
+         contentType = 'image/gif'
+         # width = 400,
+         # height = 300,
+         # alt = "This is alternate text"
+    )}, deleteFile = FALSE)
   
   output$cert_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
