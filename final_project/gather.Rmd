@@ -12,6 +12,18 @@ library(readxl)
 library(gganimate)
 ```
 
+```{r rds}
+saveRDS(ms, "ms_cert.RDS")
+saveRDS(hs, "hs_cert.RDS")
+saveRDS(public_age_join, "public_age.RDS")
+saveRDS(private_age_join, "private_age.RDS")
+saveRDS(age_plot, 'age.RDS')
+saveRDS(public_degree_join, "public_degree.RDS")
+saveRDS(private_degree_join, "private_degree.RDS")
+saveRDS(public_years_join, "public_years.RDS")
+saveRDS(private_years_join, "private_years.RDS")
+```
+
 ```{r sass ms}
 
 # Load in certification data from SASS
@@ -94,14 +106,6 @@ ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) +
        caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
 ```
 
-```{r rds}
-saveRDS(ms, "ms_cert.RDS")
-saveRDS(hs, "hs_cert.RDS")
-saveRDS(public_age_join, "public_age.RDS")
-saveRDS(private_age_join, "private_age.RDS")
-saveRDS(age_plot, 'age.RDS')
-```
-
 ```{r nces}
 tabn209_10 <- read_excel("nces_data/tabn209.10.xls", 
                          skip = 5,
@@ -131,7 +135,7 @@ private <- tabn209_10 %>%
                   
 ```
 
-```{r public age}
+```{r age_public}
 # Percentage values for public schools across all years
 public_age_p <- public %>%
   slice(15:19) %>%
@@ -168,7 +172,7 @@ public_age_join %>%
 
 ```
 
-```{r private age}
+```{r age_private}
 # Percentage values for public schools across all years
 private_age_p <- private %>%
   slice(15:19) %>%
@@ -195,7 +199,7 @@ private_age_join <- left_join(private_age_p,
 
 ```
 
-```{r public age+ private age}
+```{r age_total}
 age <- bind_rows(private_age_join, public_age_join)
 
 age_plot <- age %>%
@@ -217,6 +221,118 @@ age_ani_figure <- ggplot(age_plot, aes(x = age_range, y = percentage, color = ty
        color = 'School Type')
 
 anim_save("age.gif", age_ani_figure)
+```
+
+```{r degree_public}
+# Percentage values for public schools across all years
+public_degree_p <- public %>%
+  slice(21:25) %>%
+  select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
+           `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  rename_with(~tolower(gsub("_p", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
+
+# Percentage standard error values for public schools across all years
+public_degree_p_se <- public %>%
+  slice(21:25) %>%
+  select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
+           `2003-04_p_se`,`2007-08_p_se`, `2011-12_p_se`, `2017-18_p_se`)) %>%
+  rename_with(~tolower(gsub("_p_se", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
+
+# Merged tibble for percentage + standard errors
+public_degree_join <- left_join(public_degree_p, 
+                             public_degree_p_se, 
+                             by = c('year', 'teacher_char')) %>%
+  mutate(max = percentage + se,
+         min = percentage - se) %>%
+  mutate(type = "Public")
+
+ggplot(public_degree_join, aes(x = year, y = percentage, color = teacher_char)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(x = year, ymin = min, ymax = max),
+                width=0.1, alpha=0.9, size=1) +
+  labs(title = 'Highest Degree Earned by U.S. Teachers in Public Schools from 1987-2018',
+       x = 'Year',
+       y = 'Percentage of Teachers')
+```
+
+```{r degree_private}
+# Percentage values for public schools across all years
+private_degree_p <- private %>%
+  slice(21:25) %>%
+  select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
+           `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  rename_with(~tolower(gsub("_p", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
+
+# Percentage standard error values for public schools across all years
+private_degree_p_se <- private %>%
+  slice(21:25) %>%
+  select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
+           `2003-04_p_se`,`2007-08_p_se`, `2011-12_p_se`, `2017-18_p_se`)) %>%
+  rename_with(~tolower(gsub("_p_se", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
+
+# Merged tibble for percentage + standard errors
+private_degree_join <- left_join(private_degree_p, 
+                             private_degree_p_se, 
+                             by = c('year', 'teacher_char')) %>%
+  mutate(max = percentage + se,
+         min = percentage - se) %>%
+  mutate(type = "Private")
+
+```
+
+```{r years_public}
+# Percentage values for public schools across all years
+public_years_p <- public %>%
+  slice(27:30) %>%
+  select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
+           `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  rename_with(~tolower(gsub("_p", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
+
+# Percentage standard error values for public schools across all years
+public_years_p_se <- public %>%
+  slice(27:30) %>%
+  select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
+           `2003-04_p_se`,`2007-08_p_se`, `2011-12_p_se`, `2017-18_p_se`)) %>%
+  rename_with(~tolower(gsub("_p_se", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
+
+# Merged tibble for percentage + standard errors
+public_years_join <- left_join(public_years_p, 
+                             public_years_p_se, 
+                             by = c('year', 'teacher_char')) %>%
+  mutate(max = percentage + se,
+         min = percentage - se) %>%
+  mutate(type = "Public")
+```
+```{r years_private}
+# Percentage values for private schools across all years
+private_years_p <- private %>%
+  slice(27:30) %>%
+  select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
+           `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  rename_with(~tolower(gsub("_p", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
+
+# Percentage standard error values for private schools across all years
+private_years_p_se <- private %>%
+  slice(27:30) %>%
+  select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
+           `2003-04_p_se`,`2007-08_p_se`, `2011-12_p_se`, `2017-18_p_se`)) %>%
+  rename_with(~tolower(gsub("_p_se", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
+
+# Merged tibble for percentage + standard errors
+private_years_join <- left_join(private_years_p, 
+                             private_years_p_se, 
+                             by = c('year', 'teacher_char')) %>%
+  mutate(max = percentage + se,
+         min = percentage - se) %>%
+  mutate(type = "Private")
 ```
 
 

@@ -18,6 +18,8 @@ hs_cert <- readRDS("hs_cert.RDS")
 public_age <- readRDS("public_age.RDS")
 private_age <- readRDS("private_age.RDS")
 age_plot <- readRDS("age.RDS")
+public_degree <- readRDS("public_degree.RDS")
+private_degree <- readRDS("private_degree.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -99,18 +101,47 @@ ui <- navbarPage(
   
   tabPanel("Teacher Qualifications",
            fluidPage(
-             titlePanel("Percentage of U.S. Students Taught by Teachers with
+             titlePanel(),
+             fluidRow(
+               column(3,
+                      selectInput(
+                        "plot_type_degree",
+                        "Degree Type",
+                        c("Less than Bachelor's" = "a", 
+                          "Bachelor's" = "b", 
+                          "Master's" = "c",
+                          "Education Specialist" = "d",
+                          "Doctor's" = "e")),
+                      align = "left"
+               ),
+               column(7, plotOutput("public_degree_plot"),
+                      plotOutput("private_degree_plot"),
+                      align = "center"),
+               br(),
+               h1("Percentage of U.S. Students Taught by Teachers with
                         Various Qualifications in 2011-2012"),
-             sidebarLayout(
-               sidebarPanel(
-                 selectInput(
-                   "plot_type",
-                   "Grade Level",
-                   c("Middle School (Grades 6-8)" = "a", 
-                     "High School (Grades 9-12)" = "b")
-                 )),
-               mainPanel(plotOutput("cert_plot")))
-           )),
+               column(4, 
+                      selectInput(
+                        "plot_type",
+                        "Grade Level",
+                        c("Middle School (Grades 6-8)" = "a", 
+                          "High School (Grades 9-12)" = "b")),
+                      align = "left"
+               ),
+               column(7, 
+                      plotOutput("cert_plot")),
+                      align = "center"),
+             )),
+           #   sidebarLayout(
+           #     sidebarPanel(
+           #       selectInput(
+           #         "plot_type",
+           #         "Grade Level",
+           #         c("Middle School (Grades 6-8)" = "a", 
+           #           "High School (Grades 9-12)" = "b")
+           #       )),
+           #     mainPanel(plotOutput("cert_plot")))
+           # )),
   
   tabPanel("Discussion",
            titlePanel("Why I Chose this Data"),
@@ -189,6 +220,54 @@ server <- function(input, output) {
          # height = 300,
          # alt = "This is alternate text"
     )}, deleteFile = FALSE)
+  
+  output$public_degree_plot <- renderPlot({
+    
+    public_data <- switch(input$plot_type_degree, 
+                           "a" = public_degree %>%
+                             filter(teacher_char == "Less than bachelor's"),
+                           "b" = public_degree %>%
+                             filter(teacher_char == "Bachelor's"),
+                           "c" = public_degree %>%
+                             filter(teacher_char == "Master's"),
+                           "d" = public_degree %>%
+                             filter(teacher_char == "Education specialist"),
+                           "e" = public_degree %>%
+                             filter(teacher_char == "Doctor's"))
+    
+    ggplot(public_data, aes(x = year, y = percentage)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, color = 'green', alpha=0.9, size=1) + 
+      labs(title = 'Highest Degree Earned for U.S. Teachers in Public Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+  })
+  
+  output$private_degree_plot <- renderPlot({
+    
+    private_data <- switch(input$plot_type_degree, 
+                           "a" = private_degree %>%
+                             filter(teacher_char == "Less than bachelor's"),
+                           "b" = private_degree %>%
+                             filter(teacher_char == "Bachelor's"),
+                           "c" = private_degree %>%
+                             filter(teacher_char == "Master's"),
+                           "d" = private_degree %>%
+                             filter(teacher_char == "Education specialist"),
+                           "e" = private_degree %>%
+                             filter(teacher_char == "Doctor's"))
+    
+    ggplot(private_data, aes(x = year, y = percentage)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, color = 'green', alpha=0.9, size=1) + 
+      labs(title = 'Highest Degree Earned for U.S. Teachers in Private Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+  })
   
   output$cert_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
