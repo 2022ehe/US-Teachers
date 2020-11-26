@@ -18,7 +18,7 @@ public_age <- readRDS("public_age.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
-  #theme = shinytheme("flatly"),
+  theme = shinytheme("flatly"),
   "Impact of Teacher's Social Status on Student Performance",
   
   tabPanel("Purpose",

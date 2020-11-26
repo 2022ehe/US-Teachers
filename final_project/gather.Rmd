@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(readxl)
+library(gganimate)
 ```
 
 ```{r sass ms}
@@ -150,19 +151,70 @@ public_age_join <- left_join(public_age_p,
                              public_age_p_se, 
                              by = c('year', 'teacher_char')) %>%
   mutate(max = percentage + se,
-         min = percentage - se)
+         min = percentage - se) %>%
+  mutate(type = "Public")
 
-public_age_join %>%
-  filter(teacher_char == '40 to 49') %>%
-  ggplot(aes(x = year, y = percentage)) + 
-  geom_point(size = 2) + 
-  geom_errorbar(aes(x = year, ymin = min, ymax = max), 
-                width=0.1, color = 'dodgerblue', alpha=0.9, size=1) + 
-  labs(title = 'Age Ranges of U.S. Teachers in Public Schools from 1987-2018',
-       x = 'Year',
-       y = 'Percentage of Teachers')
+# public_age_join %>%
+#   filter(teacher_char == '40 to 49') %>%
+#   ggplot(aes(x = year, y = percentage)) + 
+#   geom_point(size = 2) + 
+#   geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+#                 width=0.1, color = 'dodgerblue', alpha=0.9, size=1) + 
+#   labs(title = 'Age Ranges of U.S. Teachers in Public Schools from 1987-2018',
+#        x = 'Year',
+#        y = 'Percentage of Teachers')
 
 ```
+
+```{r private}
+# Percentage values for public schools across all years
+private_age_p <- private %>%
+  slice(15:19) %>%
+  select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
+           `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  rename_with(~tolower(gsub("_p", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
+
+# Percentage standard error values for public schools across all years
+private_age_p_se <- private %>%
+  slice(15:19) %>%
+  select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
+           `2003-04_p_se`,`2007-08_p_se`, `2011-12_p_se`, `2017-18_p_se`)) %>%
+  rename_with(~tolower(gsub("_p_se", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
+
+# Merged tibble for percentage + standard errors
+private_age_join <- left_join(private_age_p, 
+                             private_age_p_se, 
+                             by = c('year', 'teacher_char')) %>%
+  mutate(max = percentage + se,
+         min = percentage - se) %>%
+  mutate(type = "Private")
+
+```
+
+```{r public + private}
+age <- bind_rows(private_age_join, public_age_join)
+
+age_plot <- age %>%
+  mutate(year_animate = map_chr(year, ~strsplit(., "-")[[1]][1])) %>%
+  mutate(year_animate = as.integer(year_animate)) %>%
+  mutate(age_range = factor(teacher_char, 
+                               levels = c('Under 30', '30 to 39', '40 to 49',
+                                          '50 to 59', '60 and over')))
+
+ggplot(age_plot, aes(x = age_range, y = percentage, color = type)) +
+  geom_point(size = 2) + 
+  geom_errorbar(aes(x = age_range, ymin = min, ymax = max), 
+                width=0.1, color = "gray", alpha=0.9, size=1) +
+  transition_time(year_animate) + 
+  labs(title = 'Age Ranges of Teachers in U.S. Schools from 1987-2018',
+       subtitle = "Year: {frame_time}",
+       x = 'Age Ranges',
+       y = 'Percentage of Teachers',
+       color = 'School Type')
+```
+
 
 
 
