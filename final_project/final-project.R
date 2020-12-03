@@ -135,16 +135,11 @@ ui <- navbarPage(
                       align = "center")
              ))),
   
-  # tabPanel("Test",
-  #          h2("Teacher Age Data"),
-  #          DT::dataTableOutput("my_table")),
-  
   tabPanel("Teacher Qualifications",
            fluidPage(
-             titlePanel("Teacher Qualifications"),
              fluidRow(
                column(12,
-                      h4("Percentage of U.S. Students Taught by Teachers with
+                      h2("Percentage of U.S. Students Taught by Teachers with
                         Various Qualifications in 2011-2012"),
                       align = "left"),
                br(),
@@ -160,6 +155,18 @@ ui <- navbarPage(
                       plotOutput("cert_plot"),
                align = "center"),
                br(),
+               column(12, 
+                      p("Quite a high percentage of middle school students are 
+                      taught by teachers who do not have a teaching certification 
+                      or a major related to their subject, especially for science 
+                      subjects. The standard is much higher for high school students, 
+                      as over 50% of students are taught by teachers who have 
+                      certification and/or major related to their teaching subject.")
+                 ),
+               br(),
+               column(12,
+                      h2("Highest Degree Earned Among U.S. Teachers in 2011-2012"),
+                      align = "left"),
                column(3,
                       selectInput(
                         "var_degree",
@@ -168,10 +175,7 @@ ui <- navbarPage(
                           "Bachelor's" = "b",
                           "Master's" = "c",
                           "Education Specialist or Doctor's" = "d")),
-                      align = "left",
-                      # sliderInput("range",
-                      #             label = "Range of interest:",
-                      #             min = 0, max = 100, value = c(0, 100))
+                      align = "left"
                       ),
                column(7,
                       plotOutput("state_degree_plot"),
@@ -208,10 +212,7 @@ ui <- navbarPage(
                           "3-9 years" = "b",
                           "10-20 years" = "c",
                           "Over 20 years" = "d")),
-                      align = "left",
-                      # sliderInput("range",
-                      #             label = "Range of interest:",
-                      #             min = 0, max = 100, value = c(0, 100))
+                      align = "left"
                ),
                column(7,
                       plotOutput("state_years_plot"),
@@ -249,19 +250,18 @@ ui <- navbarPage(
                column(7,
                       plotOutput("model_plot"),
                       align = "center"),
-             ))),
-  
-  tabPanel("Discussion",
-           titlePanel("Why I Chose this Data"),
-           p("To start out, I thought modeling Teacher Qualifications would
-             help orient the audience to the current standards teachers are
-             held up to in the U.S. As one can see in the figures, quite a high
-             percentage of middle school students are taught by teachers who 
-             don't have a teaching certification or a major related to their 
-             subject, especially for science subjects. The standard is much 
-             higher for high school students, as over 50% of students are 
-             taught by teachers who have certification and/or major related to
-             their teaching subject."))
+               column(12,
+                      p("To model the increase of teachers over the last ~30 years,
+                        I conducted a linear regression for both teachers in public
+                        and private schools. The independent variable in this case
+                        would be year, and the dependent would be the number
+                        of teachers. The slope, or year coefficient, for public 
+                        school teachers is 41.34, indicating an increase of 
+                        ~41,340 teachers per year. The slope, or year coeffieicnt, 
+                        for private school teachers is 6.340, indicating an increase
+                        of ~6,340 teachers per year."))
+             )))
+
   )
 
 # Define server logic required to draw all plots
