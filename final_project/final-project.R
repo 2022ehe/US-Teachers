@@ -27,6 +27,9 @@ private_degree <- readRDS("private_degree.RDS")
 public_years <- readRDS("public_years.RDS")
 private_years <- readRDS("private_years.RDS")
 state_degree <- readRDS("state_degree.RDS")
+state_years <- readRDS("state_years.RDS")
+public_teachers <- readRDS("public_teachers.RDS")
+private_teachers <- readRDS("private_teachers.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -184,6 +187,23 @@ ui <- navbarPage(
                       align = "center")
              ))),
   
+  tabPanel("Model",
+           fluidPage(
+             titlePanel("Linear Regression Model"),
+             fluidRow(
+               column(3, 
+                      selectInput(
+                        "plot_type",
+                        "School Type",
+                        c("Public" = "a", 
+                          "Private" = "b")),
+                      align = "left"
+               ),
+               column(7, 
+                      plotOutput("model_plot"),
+                      align = "center"),
+             ))),
+  
   tabPanel("Discussion",
            titlePanel("Why I Chose this Data"),
            p("To start out, I thought modeling Teacher Qualifications would
@@ -200,7 +220,7 @@ ui <- navbarPage(
            titlePanel("About Me"),
            p("My name is Emily He and I'm pursuing an S.B. in Bioengineering. 
              Feel free to contact me at emily_he@college.harvard.edu."),
-           p('Link to Github repo: https://github.com/2022ehe/gov50-finalproject')))
+           p('Link to Github repo: https://github.com/2022ehe/US-Teachers')))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -445,6 +465,30 @@ server <- function(input, output) {
     percent_map(data, color, legend, input$range[1], input$range[2])
     
   })
+  
+  output$model_plot <- renderPlot({
+    
+    ifelse(
+      input$plot_type == "a",
+      
+      # If input$plot_type is "a", plot bar graph of percentage of middle 
+      # school students taught by teachers of various qualification levels
+      
+      x <- public_teachers,
+      
+      # If input$plot_type is "b", plot bar graph of percentage of middle 
+      # school students taught by teachers of various qualification levels
+      
+      x <- private_teachers
+    )
+    
+    fit <- lm(teachers ~ year, data = x)
+    
+    ggplot(x, aes(x = year, y = teachers)) + 
+      geom_point() + 
+      geom_line(aes(x = year, y = fitted(fit)))
+  }
+  )
   
   # output$my_table <- DT::renderDataTable({
   #   public_age

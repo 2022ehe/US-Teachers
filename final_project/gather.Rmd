@@ -26,6 +26,8 @@ saveRDS(public_years_join, "public_years.RDS")
 saveRDS(private_years_join, "private_years.RDS")
 saveRDS(state_degree, "state_degree.RDS")
 saveRDS(state_years, "state_years.RDS")
+saveRDS(public_teachers, "public_teachers.RDS")
+saveRDS(private_teachers, "private_teachers.RDS")
 ```
 
 ```{r sass ms}
@@ -427,6 +429,37 @@ state_years <- tabn209_30 %>%
   mutate_all(~replace(., is.na(.), 0))
   
 percent_map(var = state_years$`Less than 3`, "darkgreen", "% Less than 3 years")
+```
+```{r model}
+public_teachers <- public %>%
+  slice(2) %>%
+  select(`teacher_char`, `1987-88_n`, `1990-91_n`, `1999-2000_n`, `2003-04_n`, 
+         `2007-08_n`, `2011-12_n`, `2017-18_n`) %>%
+  rename_with(~tolower(gsub("-.._n", "", .x))) %>%
+  rename_with(~tolower(gsub("-...._n", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'teachers') %>%
+  mutate(year = as.numeric(year),
+         type = "public") 
+
+private_teachers <- private %>%
+  slice(2) %>%
+  select(`teacher_char`, `1987-88_n`, `1990-91_n`, `1999-2000_n`, `2003-04_n`, 
+         `2007-08_n`, `2011-12_n`, `2017-18_n`) %>%
+  rename_with(~tolower(gsub("-.._n", "", .x))) %>%
+  rename_with(~tolower(gsub("-...._n", "", .x))) %>%
+  pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'teachers') %>%
+  mutate(year = as.numeric(year),
+         type = "private") 
+
+fit_public <- lm(teachers ~ year, data = public_teachers)
+fit_private <- lm(teachers ~ year, data = private_teachers)
+  
+ggplot(total_teachers, aes(x = year, y = teachers)) + 
+  geom_point() + 
+  geom_line(aes(x = year, y = fitted(fit_public)))
+
+
+
 ```
 
 
