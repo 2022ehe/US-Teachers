@@ -17,15 +17,23 @@ library(mapproj)
 ```{r rds}
 saveRDS(ms, "ms_cert.RDS")
 saveRDS(hs, "hs_cert.RDS")
+
 saveRDS(public_age_join, "public_age.RDS")
 saveRDS(private_age_join, "private_age.RDS")
+saveRDS(age, "age_total.RDS")
 saveRDS(age_plot, 'age.RDS')
+
 saveRDS(public_degree_join, "public_degree.RDS")
 saveRDS(private_degree_join, "private_degree.RDS")
+saveRDS(degree, "degree_total.RDS")
+
 saveRDS(public_years_join, "public_years.RDS")
 saveRDS(private_years_join, "private_years.RDS")
+saveRDS(years_total, "year_total.RDS")
+
 saveRDS(state_degree, "state_degree.RDS")
 saveRDS(state_years, "state_years.RDS")
+
 saveRDS(public_teachers, "public_teachers.RDS")
 saveRDS(private_teachers, "private_teachers.RDS")
 ```
@@ -291,6 +299,18 @@ private_degree_join <- left_join(private_degree_p,
 
 ```
 
+```{r degree_total}
+degree <- bind_rows(private_degree_join, public_degree_join)
+
+ggplot(degree, aes(x = year, y = percentage, color = teacher_char)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(x = year, ymin = min, ymax = max),
+                width=0.1, alpha=0.9, size=1) +
+  labs(title = 'Highest Degree Earned by U.S. Teachers in Public Schools from 1987-2018',
+       x = 'Year',
+       y = 'Percentage of Teachers')
+```
+
 ```{r years_public}
 # Percentage values for public schools across all years
 public_years_p <- public %>%
@@ -348,6 +368,11 @@ private_years_join <- left_join(private_years_p,
   mutate(max = percentage + se,
          min = percentage - se) %>%
   mutate(type = "Private")
+```
+
+```{r years_total}
+years_total <- bind_rows(private_years_join, public_years_join)
+
 ```
 
 ```{r map_function}
@@ -413,7 +438,7 @@ state_degree <- tabn209_30 %>%
          eddoc = as.numeric(eddoc)) %>%
   mutate_all(~replace(., is.na(.), 0))
   
-percent_map(var = state_degree$less, "darkgreen", "% less")
+percent_map(var = state_degree$master, "darkgreen", "% with Bachelor's")
 ```
 ```{r state_years, warning = FALSE}
 state_years <- tabn209_30 %>%
@@ -454,9 +479,9 @@ private_teachers <- private %>%
 fit_public <- lm(teachers ~ year, data = public_teachers)
 fit_private <- lm(teachers ~ year, data = private_teachers)
   
-ggplot(total_teachers, aes(x = year, y = teachers)) + 
+ggplot(private_teachers, aes(x = year, y = teachers)) + 
   geom_point() + 
-  geom_line(aes(x = year, y = fitted(fit_public)))
+  geom_line(aes(x = year, y = fitted(fit_private)))
 
 
 

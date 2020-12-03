@@ -19,13 +19,20 @@ source("helper.R")
 # Reads in data
 ms_cert <- readRDS("ms_cert.RDS")
 hs_cert <- readRDS("hs_cert.RDS")
+
 public_age <- readRDS("public_age.RDS")
 private_age <- readRDS("private_age.RDS")
+age_total <- readRDS("age_total.RDS")
 age_plot <- readRDS("age.RDS")
+
 public_degree <- readRDS("public_degree.RDS")
 private_degree <- readRDS("private_degree.RDS")
+degree_total <- readRDS("degree_total.RDS")
+
 public_years <- readRDS("public_years.RDS")
 private_years <- readRDS("private_years.RDS")
+years_total <- readRDS("year_total.RDS")
+
 state_degree <- readRDS("state_degree.RDS")
 state_years <- readRDS("state_years.RDS")
 public_teachers <- readRDS("public_teachers.RDS")
@@ -85,8 +92,10 @@ ui <- navbarPage(
                           "50 to 59" = "d",
                           "60 and over" = "e"))
                 ),
-               column(7, plotOutput("public_age_plot"),
-                          plotOutput("private_age_plot"),
+               column(7, 
+                      plotOutput("all_age_plot"),
+                      # plotOutput("public_age_plot"),
+                      # plotOutput("private_age_plot"),
                       align = "center")
              ))),
   
@@ -103,32 +112,32 @@ ui <- navbarPage(
                         Various Qualifications in 2011-2012"),
                       align = "left"),
                br(),
-               column(4, 
+               column(4,
                       selectInput(
                         "plot_type",
                         "Grade Level",
-                        c("Middle School (Grades 6-8)" = "a", 
+                        c("Middle School (Grades 6-8)" = "a",
                           "High School (Grades 9-12)" = "b")),
                       align = "left"
                ),
-               column(7, 
+               column(7,
                       plotOutput("cert_plot"),
                align = "center"),
                br(),
-               column(3, 
+               column(3,
                       selectInput(
-                        "var",
+                        "var_degree",
                         "Highest Degree Earned",
-                        c("Less than Bachelor's" = "a", 
-                          "Bachelor's" = "b", 
+                        c("Less than Bachelor's" = "a",
+                          "Bachelor's" = "b",
                           "Master's" = "c",
                           "Education Specialist or Doctor's" = "d")),
-                      align = "left", 
-                      sliderInput("range", 
-                                  label = "Range of interest:",
-                                  min = 0, max = 100, value = c(0, 100))
+                      align = "left",
+                      # sliderInput("range",
+                      #             label = "Range of interest:",
+                      #             min = 0, max = 100, value = c(0, 100))
                       ),
-               column(7, 
+               column(7,
                       plotOutput("state_degree_plot"),
                       align = "center"),
                br(),
@@ -136,16 +145,17 @@ ui <- navbarPage(
                       selectInput(
                         "plot_type_degree",
                         "Degree Type",
-                        c("Less than Bachelor's" = "a", 
-                          "Bachelor's" = "b", 
+                        c("Less than Bachelor's" = "a",
+                          "Bachelor's" = "b",
                           "Master's" = "c",
                           "Education Specialist" = "d",
                           "Doctor's" = "e")),
                       align = "left"
                ),
-               column(7, 
-                      plotOutput("public_degree_plot"),
-                      plotOutput("private_degree_plot"),
+               column(7,
+                      plotOutput("all_degree_plot"),
+                      #plotOutput("public_degree_plot"),
+                      #plotOutput("private_degree_plot"),
                       align = "center"),
              )
              )),
@@ -154,52 +164,53 @@ ui <- navbarPage(
            fluidPage(
              titlePanel("Teacher Experience"),
              fluidRow(
-               column(3, 
+               column(3,
+                      selectInput(
+                        "var_years",
+                        "Years of Teaching Experience",
+                        c("Less than 3 years" = "a",
+                          "3-9 years" = "b",
+                          "10-20 years" = "c",
+                          "Over 20 years" = "d")),
+                      align = "left",
+                      # sliderInput("range",
+                      #             label = "Range of interest:",
+                      #             min = 0, max = 100, value = c(0, 100))
+               ),
+               column(7,
+                      plotOutput("state_years_plot"),
+                      align = "center"),
+               br(),
+               column(3,
                       selectInput(
                         "plot_type_years",
                         "Years of Teaching Experience",
-                        c("Less than 3" = "a", 
-                          "3 to 9" = "b", 
+                        c("Less than 3" = "a",
+                          "3 to 9" = "b",
                           "10 to 20" = "c",
                           "Over 20" = "d")),
                       align = "left"
                ),
-               column(7, 
-                      plotOutput("public_years_plot"),
-                      plotOutput("private_years_plot"),
+               column(7,
+                      plotOutput("all_years_plot"),
+                      # plotOutput("public_years_plot"),
+                      # plotOutput("private_years_plot"),
                       align = "center"),
-               br(),
-               column(3, 
-                      selectInput(
-                        "var",
-                        "Highest Degree Earned",
-                        c("Less than Bachelor's" = "a", 
-                          "Bachelor's" = "b", 
-                          "Master's" = "c",
-                          "Education Specialist or Doctor's" = "d")),
-                      align = "left", 
-                      sliderInput("range", 
-                                  label = "Range of interest:",
-                                  min = 0, max = 100, value = c(0, 100))
-               ),
-               column(7, 
-                      plotOutput("state_degree_plot"),
-                      align = "center")
              ))),
-  
+
   tabPanel("Model",
            fluidPage(
              titlePanel("Linear Regression Model"),
              fluidRow(
-               column(3, 
+               column(3,
                       selectInput(
-                        "plot_type",
+                        "var",
                         "School Type",
-                        c("Public" = "a", 
+                        c("Public" = "a",
                           "Private" = "b")),
                       align = "left"
                ),
-               column(7, 
+               column(7,
                       plotOutput("model_plot"),
                       align = "center"),
              ))),
@@ -275,6 +286,31 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  output$all_age_plot <- renderPlot({
+    
+    data <- switch(input$plot_type_age, 
+                           "a" = age_total %>%
+                             filter(teacher_char == 'Under 30'),
+                           "b" = age_total %>%
+                             filter(teacher_char == '30 to 39'),
+                           "c" = age_total %>%
+                             filter(teacher_char == '40 to 49'),
+                           "d" = age_total %>%
+                             filter(teacher_char == '50 to 59'),
+                           "e" = age_total %>%
+                             filter(teacher_char == '60 and over'))
+    
+    ggplot(data, aes(x = year, y = percentage, color = type)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, alpha=0.9, size=1) + 
+      labs(title = 'Age Ranges of U.S. Teachers in Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') + 
+      theme_bw()
+  })
+  
   output$animated_age_plot <- renderImage({
     # Return a list containing the filename
     list(src = "age.gif",
@@ -334,6 +370,31 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  output$all_degree_plot <- renderPlot({
+    
+    data <- switch(input$plot_type_degree, 
+                           "a" = degree_total %>%
+                             filter(teacher_char == "Less than bachelor's"),
+                           "b" = degree_total %>%
+                             filter(teacher_char == "Bachelor's"),
+                           "c" = degree_total %>%
+                             filter(teacher_char == "Master's"),
+                           "d" = degree_total %>%
+                             filter(teacher_char == "Education specialist"),
+                           "e" = degree_total %>%
+                             filter(teacher_char == "Doctor's"))
+    
+    ggplot(data, aes(x = year, y = percentage, color = type)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, alpha=0.9, size=1) + 
+      labs(title = 'Highest Degree Earned for U.S. Teachers in Schools from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') +
+      theme_bw()
+  })
+  
   output$public_years_plot <- renderPlot({
     
     public_data <- switch(input$plot_type_years, 
@@ -380,6 +441,29 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  output$all_years_plot <- renderPlot({
+    
+    data <- switch(input$plot_type_years, 
+                           "a" = years_total %>%
+                             filter(teacher_char == "Less than 3"),
+                           "b" = years_total %>%
+                             filter(teacher_char == "3 to 9"),
+                           "c" = years_total %>%
+                             filter(teacher_char == "10 to 20"),
+                           "d" = years_total %>%
+                             filter(teacher_char == "Over 20"))
+    
+    ggplot(data, aes(x = year, y = percentage, color = type)) + 
+      geom_point(size = 2) + 
+      geom_errorbar(aes(x = year, ymin = min, ymax = max), 
+                    width=0.1, alpha=0.9, size=1) + 
+      labs(title = 'Years of Teaching Experience for U.S. Teachers from 1987-2018',
+           x = 'Year',
+           y = 'Percentage of Teachers', 
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') +
+      theme_bw()
+  })
+  
   output$cert_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
     
@@ -419,74 +503,71 @@ server <- function(input, output) {
   output$state_degree_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
     
-    data <- switch(input$var, 
+    data <- switch(input$var_degree, 
                    "a" = state_degree$less,
                    "b" = state_degree$bachelor,
                    "c" = state_degree$master,
                    "d" = state_degree$eddoc)
     
-    color <- switch(input$var, 
+    color <- switch(input$var_degree, 
                     "a" = "darkgreen",
                     "b" = "black",
                     "c" = "darkorange",
                     "d" = "darkviolet")
     
-    legend <- switch(input$var, 
+    legend <- switch(input$var_degree, 
                      "a" = "% with Less than Bachelor's",
                      "b" = "% with Bachelor's",
                      "c" = "% with Master's",
                      "d" = "% with Education Specialist or Doctor's")
 
-    percent_map(data, color, legend, input$range[1], input$range[2])
+    percent_map(data, color, legend)
     
   })
   
   output$state_years_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
     
-    data <- switch(input$var, 
+    data <- switch(input$var_years, 
                    "a" = state_years$`Less than 3`,
                    "b" = state_years$`3 to 9`,
                    "c" = state_years$`10 to 20`,
                    "d" = state_years$`Over 20`)
     
-    color <- switch(input$var, 
+    color <- switch(input$var_years, 
                     "a" = "darkgreen",
                     "b" = "black",
                     "c" = "darkorange",
                     "d" = "darkviolet")
     
-    legend <- switch(input$var, 
+    legend <- switch(input$var_years, 
                      "a" = "% with Less than 3 years",
                      "b" = "% with 3-9 years",
                      "c" = "% with 10-20 years",
                      "d" = "% with Over 20 years")
     
-    percent_map(data, color, legend, input$range[1], input$range[2])
+    percent_map(data, color, legend)
     
   })
   
   output$model_plot <- renderPlot({
     
-    ifelse(
-      input$plot_type == "a",
-      
-      # If input$plot_type is "a", plot bar graph of percentage of middle 
-      # school students taught by teachers of various qualification levels
-      
-      x <- public_teachers,
-      
-      # If input$plot_type is "b", plot bar graph of percentage of middle 
-      # school students taught by teachers of various qualification levels
-      
-      x <- private_teachers
-    )
+    #data <- private_teachers
     
-    fit <- lm(teachers ~ year, data = x)
+    ifelse(input$var == 'a', 
+           x <- public_teachers,
+           x <- private_teachers)
+    
+    fit <- lm(teachers ~ year, x)
     
     ggplot(x, aes(x = year, y = teachers)) + 
       geom_point() + 
-      geom_line(aes(x = year, y = fitted(fit)))
+      geom_line(aes(x = year, y = fitted(fit)), color = 'blue') +
+      theme_bw() + 
+      labs(x = 'Year', y = 'Number of Teachers (in thousands)',
+           title = 'Number of Teachers Between 1987 and 2018',
+           subtitle = 'The number of teachers has been increasing in a linear fashion over the 30 year range.',
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
   }
   )
   
