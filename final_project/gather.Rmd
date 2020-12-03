@@ -360,7 +360,11 @@ anim_save("age.gif", age_ani_figure)
 ```
 
 ```{r degree_public}
-# Percentage values for public schools across all years
+
+# To isolate the median percentage values for degrees of teacher in public schools 
+# across all years, I cleaned up the data by first isolating the degree data
+# segment.
+
 public_degree_p <- public %>%
   slice(21:25) %>%
   select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
@@ -368,7 +372,9 @@ public_degree_p <- public %>%
   rename_with(~tolower(gsub("_p", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
 
-# Percentage standard error values for public schools across all years
+# In order to plot standard error bars, I also isolated the percentage standard 
+# error values for public schools across all years.
+
 public_degree_p_se <- public %>%
   slice(21:25) %>%
   select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
@@ -376,25 +382,36 @@ public_degree_p_se <- public %>%
   rename_with(~tolower(gsub("_p_se", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
 
-# Merged tibble for percentage + standard errors
-public_degree_join <- left_join(public_degree_p, 
-                             public_degree_p_se, 
-                             by = c('year', 'teacher_char')) %>%
+# To plot the median and standard error bars on the same plot, I merged the 
+# two tibbles made above, joining by year and teacher characteristic.
+
+public_degree_join <- left_join(public_degree_p,
+                                public_degree_p_se,
+                                by = c('year', 'teacher_char')) %>%
   mutate(max = percentage + se,
          min = percentage - se) %>%
   mutate(type = "Public")
+
+# To make sure the plot would translate onto my ShinyApp, I plotted an example figure
+# here in this Markdown file. The actual figure would only have one degree selected
+# at a time.
 
 ggplot(public_degree_join, aes(x = year, y = percentage, color = teacher_char)) +
   geom_point(size = 2) +
   geom_errorbar(aes(x = year, ymin = min, ymax = max),
                 width=0.1, alpha=0.9, size=1) +
+  theme_bw() + 
   labs(title = 'Highest Degree Earned by U.S. Teachers in Public Schools from 1987-2018',
        x = 'Year',
        y = 'Percentage of Teachers')
 ```
 
 ```{r degree_private}
-# Percentage values for public schools across all years
+
+# To isolate the median percentage values for degrees of teacher in private schools 
+# across all years, I cleaned up the data by first isolating the degree data
+# segment.
+
 private_degree_p <- private %>%
   slice(21:25) %>%
   select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
@@ -402,7 +419,9 @@ private_degree_p <- private %>%
   rename_with(~tolower(gsub("_p", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
 
-# Percentage standard error values for public schools across all years
+# In order to plot standard error bars, I also isolated the percentage standard 
+# error values for private schools across all years.
+
 private_degree_p_se <- private %>%
   slice(21:25) %>%
   select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
@@ -410,7 +429,9 @@ private_degree_p_se <- private %>%
   rename_with(~tolower(gsub("_p_se", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
 
-# Merged tibble for percentage + standard errors
+# To plot the median and standard error bars on the same plot, I merged the 
+# two tibbles made above, joining by year and teacher characteristic.
+
 private_degree_join <- left_join(private_degree_p, 
                              private_degree_p_se, 
                              by = c('year', 'teacher_char')) %>%
@@ -421,6 +442,14 @@ private_degree_join <- left_join(private_degree_p,
 ```
 
 ```{r degree_total}
+
+# I wanted to display public and private school on the same figure,
+# so I added a column called `type` when I was cleaning up the private and public
+# school tibbles that identified them as public or private. Then, I binded the
+# rows here. I decided against using a join function, because I had already 
+# cleaned up the data in the same way, so I knew the format was the same. I also
+# wanted all the rows in both tibbles.
+
 degree <- bind_rows(private_degree_join, public_degree_join)
 
 ggplot(degree, aes(x = year, y = percentage, color = teacher_char)) +
@@ -433,7 +462,11 @@ ggplot(degree, aes(x = year, y = percentage, color = teacher_char)) +
 ```
 
 ```{r years_public}
-# Percentage values for public schools across all years
+
+# To isolate the median percentage values for years of teaching experience for
+# teachers in public schools across all years, I cleaned up the data by first 
+# isolating the years data segment.
+
 public_years_p <- public %>%
   slice(27:30) %>%
   select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
@@ -441,7 +474,9 @@ public_years_p <- public %>%
   rename_with(~tolower(gsub("_p", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
 
-# Percentage standard error values for public schools across all years
+# In order to plot standard error bars, I also isolated the percentage standard 
+# error values for public schools across all years.
+
 public_years_p_se <- public %>%
   slice(27:30) %>%
   select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
@@ -449,7 +484,9 @@ public_years_p_se <- public %>%
   rename_with(~tolower(gsub("_p_se", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
 
-# Merged tibble for percentage + standard errors
+# To plot the median and standard error bars on the same plot, I merged the 
+# two tibbles made above, joining by year and teacher characteristic.
+
 public_years_join <- left_join(public_years_p, 
                              public_years_p_se, 
                              by = c('year', 'teacher_char')) %>%
@@ -457,16 +494,25 @@ public_years_join <- left_join(public_years_p,
          min = percentage - se) %>%
   mutate(type = "Public")
 
+# To make sure the plot would translate onto my ShinyApp, I plotted an example figure
+# here in this Markdown file. The actual figure would only have one year range selected
+# at a time.
+
 ggplot(public_years_join, aes(x = year, y = percentage, color = teacher_char)) +
   geom_point(size = 2) +
   geom_errorbar(aes(x = year, ymin = min, ymax = max),
                 width=0.1, alpha=0.9, size=1) +
+  theme_bw() + 
   labs(title = 'Years of Teaching Experience of U.S. Teachers in Public Schools from 1987-2018',
        x = 'Year',
        y = 'Percentage of Teachers')
 ```
 ```{r years_private}
-# Percentage values for private schools across all years
+
+# To isolate the median percentage values for years of teaching experience for
+# teachers in private schools across all years, I cleaned up the data by first 
+# isolating the years data segment.
+
 private_years_p <- private %>%
   slice(27:30) %>%
   select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
@@ -474,7 +520,9 @@ private_years_p <- private %>%
   rename_with(~tolower(gsub("_p", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
 
-# Percentage standard error values for private schools across all years
+# In order to plot standard error bars, I also isolated the percentage standard 
+# error values for private schools across all years.
+
 private_years_p_se <- private %>%
   slice(27:30) %>%
   select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
@@ -482,7 +530,9 @@ private_years_p_se <- private %>%
   rename_with(~tolower(gsub("_p_se", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
 
-# Merged tibble for percentage + standard errors
+# To plot the median and standard error bars on the same plot, I merged the 
+# two tibbles made above, joining by year and teacher characteristic.
+
 private_years_join <- left_join(private_years_p, 
                              private_years_p_se, 
                              by = c('year', 'teacher_char')) %>%
@@ -492,8 +542,15 @@ private_years_join <- left_join(private_years_p,
 ```
 
 ```{r years_total}
-years_total <- bind_rows(private_years_join, public_years_join)
 
+# I wanted to display public and private school on the same figure,
+# so I added a column called `type` when I was cleaning up the private and public
+# school tibbles that identified them as public or private. Then, I binded the
+# rows here. I decided against using a join function, because I had already 
+# cleaned up the data in the same way, so I knew the format was the same. I also
+# wanted all the rows in both tibbles.
+
+years_total <- bind_rows(private_years_join, public_years_join)
 ```
 
 ```{r map_function}

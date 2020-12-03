@@ -239,7 +239,7 @@ ui <- navbarPage(
              Feel free to contact me at emily_he@college.harvard.edu."),
            p('Link to Github repo: https://github.com/2022ehe/US-Teachers')))
 
-# Define server logic required to draw a histogram
+# Define server logic required to draw all plots
 server <- function(input, output) {
   output$public_age_plot <- renderPlot({
     # Generate type based on input$plot_type from ui
