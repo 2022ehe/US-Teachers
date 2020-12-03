@@ -497,26 +497,37 @@ years_total <- bind_rows(private_years_join, public_years_join)
 ```
 
 ```{r map_function}
+
+# This percent_map function will be used to generate the U.S. map plots
+# in future code chunks. The credits for this code goes to the Census
+# tutorial on ShinyApp. This is also located in helper.R to be used in the Shiny
+# App.
+
 percent_map <- function(var, color, legend.title, min = 0, max = 100) {
 
-  # generate vector of fill colors for map
+  # To generate a gradient of fill colors, I created a vector of color options.
+  
   shades <- colorRampPalette(c("white", color))(100)
   
-  # constrain gradient to percents that occur between min and max
+  # I constrained gradient to percents that occur between min and max.
+  
   var <- pmax(var, min)
   var <- pmin(var, max)
   percents <- as.integer(cut(var, 100, 
     include.lowest = TRUE, ordered = TRUE))
   fills <- shades[percents]
   
-  # plot choropleth map
+  # To plot the choropleth map by state, I used the map("state") function.
+  
   map("state", fill = TRUE, col = fills, resolution = 0,
     lty = 1, lwd = 1, projection = "polyconic", 
     myborder = 0, mar = c(0,0,0,0))
   
-  # add a legend
+  # This legend is needed to tell users what the colors mean. This is where
+  # I specify that 0 means insufficient data.
+  
   inc <- (max - min) / 4
-  legend.text <- c(paste0("No data"),
+  legend.text <- c(paste0("Insufficient data"),
     paste0(min + inc, " %"),
     paste0(min + 2 * inc, " %"),
     paste0(min + 3 * inc, " %"),
@@ -531,6 +542,10 @@ percent_map <- function(var, color, legend.title, min = 0, max = 100) {
 ```
 
 ```{r import_state}
+
+# This dataset covers teacher's years of experience and qualifications
+# across the US in public schools in the school year 2011-2012.
+
 tabn209_30 <- read_excel("nces_data/tabn209.30.xls", skip = 4,
     col_types = c("text", "skip", "skip", 
         "text", "skip", "skip", "text", "skip", 
@@ -540,6 +555,11 @@ tabn209_30 <- read_excel("nces_data/tabn209.30.xls", skip = 4,
         "text", "skip", "skip", "text", 
         "skip", "skip", "text", "skip", 
         "skip", "text", "skip", "skip"),
+    
+    # If I didn't set column names, there would be a message displaying that
+    # arbitrary names such as `...1` was given. Since those are not descriptive,
+    # I manually set up column names here.
+    
     col_names = c('state', 
                   "Less than bachelor's", 
                   "Bachelor's", 
@@ -550,9 +570,19 @@ tabn209_30 <- read_excel("nces_data/tabn209.30.xls", skip = 4,
   
 ```
 
-```{r state_degree}
+```{r state_degree, warning = FALSE}
+# I set warning = FALSE here, because when I convert to numeric, NAs are
+# introduced by coercion. This was purposeful, because the data uses a symbol
+# to indicate no data, and so that should show up as NA when I plot. There
+# were no other warnings.
+
 state_degree <- tabn209_30 %>%
   select(1:5) %>%
+  
+  # Renaming the variables here made it easier for me to work with the data.
+  # I kept the variables as is when importing because I still wanted the names
+  # to be as descriptive as possible.
+  
   rename(less = `Less than bachelor's`,
          bachelor = `Bachelor's`,
          master = `Master's`,
@@ -564,14 +594,26 @@ state_degree <- tabn209_30 %>%
          bachelor = as.numeric(bachelor),
          master = as.numeric(master),
          eddoc = as.numeric(eddoc)) %>%
+  
+  # To plot NA values, I changed them to 0, and then indicated on the legend 
+  # that 0 meant NA.
+  
   mutate_all(~replace(., is.na(.), 0))
   
 percent_map(var = state_degree$master, "darkgreen", "% with Bachelor's")
 ```
 ```{r state_years, warning = FALSE}
+# I set warning = FALSE here, because when I convert to numeric, NAs are
+# introduced by coercion. This was purposeful, because the data uses a symbol
+# to indicate no data, and so that should show up as NA when I plot. There
+# were no other warnings.
 
 state_years <- tabn209_30 %>%
   select(c(1, 6:9)) %>%
+  
+  # I only dropped NA state values, because otherwise, there wouldn't be
+  # data to plot for all 50 states and R would throw a warning.
+  
   drop_na(state) %>%
   mutate(state = map_chr(state, ~gsub("\\.", "", .))) %>%
   slice(3:53) %>%
@@ -579,6 +621,10 @@ state_years <- tabn209_30 %>%
          `3 to 9` = as.numeric(`3 to 9`),
          `10 to 20` = as.numeric(`10 to 20`),
          `Over 20` = as.numeric(`Over 20`)) %>%
+  
+  # In order to plot the NA values, I turned them to 0, and indicated on the scale
+  # that white meant insufficient data.
+  
   mutate_all(~replace(., is.na(.), 0))
   
 percent_map(var = state_years$`Less than 3`, "darkgreen", "% Less than 3 years")
