@@ -7,6 +7,9 @@
 #    http://shiny.rstudio.com/
 #
 
+# I imported the libraries I need, including gganimate for the animation plot
+# and maps and mapproj for my U.S. map plots.
+
 library(shiny)
 library(tidyverse)
 library(shinythemes)
@@ -14,67 +17,94 @@ library(gganimate)
 library(maps)
 library(mapproj)
 
+# helper.R contains the percent_map function used to plot the U.S. map figures.
+
 source("helper.R")
 
-# Reads in certification data
+# I read in the certification datasets.
+
 ms_cert <- readRDS("ms_cert.RDS")
 hs_cert <- readRDS("hs_cert.RDS")
 
-# Reads in age data
+# I read in the age datasets and plot.
+
 public_age <- readRDS("public_age.RDS")
 private_age <- readRDS("private_age.RDS")
 age_total <- readRDS("age_total.RDS")
 age_plot <- readRDS("age.RDS")
 
-# Reads in degree data
+# I read in the degree datasets.
+
 public_degree <- readRDS("public_degree.RDS")
 private_degree <- readRDS("private_degree.RDS")
 degree_total <- readRDS("degree_total.RDS")
 
-# Reads in years of teaching experience data
+# I read in the years of teaching experience datasets.
+
 public_years <- readRDS("public_years.RDS")
 private_years <- readRDS("private_years.RDS")
 years_total <- readRDS("year_total.RDS")
 
-# Reads in degree and years data by state
+# I read in the degrees earned and years of teaching experience datasets by state.
+
 state_degree <- readRDS("state_degree.RDS")
 state_years <- readRDS("state_years.RDS")
 
-# Reads in total number of teachers in private and public schools for model
+# I read in the total number of teachers datasets to be used for my model.
+
 public_teachers <- readRDS("public_teachers.RDS")
 private_teachers <- readRDS("private_teachers.RDS")
 
-# Define UI for application that draws a histogram
+
+# This UI defines the user interface for the application.
+
 ui <- navbarPage(
   theme = shinytheme("flatly"),
-  "Impact of Teacher's Social Status on Student Performance",
+  "U.S. Teacher Characteristics",
   
-  tabPanel("Purpose",
-           titlePanel("Project Background and Motivations"),
+  tabPanel("About",
+           column(6, 
+           h1("Project Background"),
            
            p("One of the most well known aphorisms in education is 
            the 'quality of an education system cannot exceed the quality of its 
            teachers'."),
            
            p("Thus, much has been researched with regard to the competence of 
-           teachers and the effectiveness of their teaching. However, there has 
-           not been as much focus on how the social status of teachers may 
-           play a role in students outcomes.   
-           The Global Teacher Status Index in 2013 was the first international 
-           in-depth survey that collected data from 21 countries on details such 
-           as how students respect their teachers, where teachers rank among other 
-           professions, how high of a salary teachers deserve, etc. The 2018 
-           study analysis released even more information on 35 nations, and 
-           concluded that both high teacher pay and high status are necessary 
-           to produce top academic outcomes."),
+           teachers and the effectiveness of their teaching. As the world
+           races ahead in terms of technology, research, and scientific discovery,
+           how has the number and quality of teachers in the U.S. education system
+           evolved to keep up with such rapid changes?"),
+           
+           p("According to the Global Teacher Status Index 2018, the U.S. has not
+           caught up in terms of the amount of respect teachers, i.e. the 
+           social status associated with the teaching role. As teachers are
+           responsible for shaping the future, this is especially concerning."),
           
-           p("For my final project, I will use this 
-           GTSI2018 data to breakdown relationships between the various factors 
-           they surveyed to more comprehensively understand the results. 
-           Currently, I am using data from the U.S. Department of Education's 
+           h1('The Data'),
+           p("For my final project, I use data from the U.S. Department of Education's 
            National Center for Education Statistics and its School and Staffing
-           Survey. Although only based in the U.S., the SASS provides
-           comprehensive, standardized data on schools across the nation.")),
+           Survey to analyze trends in the quantity and quality of teachers
+           across the U.S. and comparing public vs. private schools.")),
+           
+           column(3, 
+                  imageOutput("country_list", height = "100%", width = "100%")),
+           
+           column(12,
+           h1('About Me'),
+           p("My name is Emily He and I'm an undergraduate pursuing an S.B. in 
+           Bioengineering. Feel free to contact me at ", 
+             a("emily_he@college.harvard.edu", href = "mailto: emily_he@college.harvard.edu"),
+             "."),
+           
+           p("You can find the code to this project on my  ",
+             a("Github", href = "https://github.com/2022ehe/US-Teachers"),
+             ".")),
+           
+           column(12, 
+           imageOutput("headshot", height = "100%", width = "100%"),
+           align = 'center')
+  ),
   
   tabPanel("Teacher Age Ranges",
            fluidPage(
@@ -231,13 +261,8 @@ ui <- navbarPage(
              subject, especially for science subjects. The standard is much 
              higher for high school students, as over 50% of students are 
              taught by teachers who have certification and/or major related to
-             their teaching subject.")),
-  
-  tabPanel("About", 
-           titlePanel("About Me"),
-           p("My name is Emily He and I'm pursuing an S.B. in Bioengineering. 
-             Feel free to contact me at emily_he@college.harvard.edu."),
-           p('Link to Github repo: https://github.com/2022ehe/US-Teachers')))
+             their teaching subject."))
+  )
 
 # Define server logic required to draw all plots
 server <- function(input, output) {
@@ -576,6 +601,25 @@ server <- function(input, output) {
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
   }
   )
+  
+  output$country_list <- renderImage({
+    # Return a list containing the filename
+    list(src = "varkey.jpg",
+         contentType = 'image/jpg',
+         width = 500,
+         height = 450,
+         alt = "This is alternate text"
+    )}, deleteFile = FALSE)
+  
+  output$headshot <- renderImage({
+    # Return a list containing the filename
+    list(src = "headshot.JPG",
+         contentType = 'image/jpg',
+         width = 200,
+         height = 200,
+         alt = "This is alternate text"
+    )}, deleteFile = FALSE)
+  
   
   # output$my_table <- DT::renderDataTable({
   #   public_age
