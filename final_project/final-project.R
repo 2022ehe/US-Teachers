@@ -16,25 +16,31 @@ library(mapproj)
 
 source("helper.R")
 
-# Reads in data
+# Reads in certification data
 ms_cert <- readRDS("ms_cert.RDS")
 hs_cert <- readRDS("hs_cert.RDS")
 
+# Reads in age data
 public_age <- readRDS("public_age.RDS")
 private_age <- readRDS("private_age.RDS")
 age_total <- readRDS("age_total.RDS")
 age_plot <- readRDS("age.RDS")
 
+# Reads in degree data
 public_degree <- readRDS("public_degree.RDS")
 private_degree <- readRDS("private_degree.RDS")
 degree_total <- readRDS("degree_total.RDS")
 
+# Reads in years of teaching experience data
 public_years <- readRDS("public_years.RDS")
 private_years <- readRDS("private_years.RDS")
 years_total <- readRDS("year_total.RDS")
 
+# Reads in degree and years data by state
 state_degree <- readRDS("state_degree.RDS")
 state_years <- readRDS("state_years.RDS")
+
+# Reads in total number of teachers in private and public schools for model
 public_teachers <- readRDS("public_teachers.RDS")
 private_teachers <- readRDS("private_teachers.RDS")
 

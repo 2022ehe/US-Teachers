@@ -15,24 +15,38 @@ library(mapproj)
 ```
 
 ```{r rds}
+
+# I saved certification data as an RDS to be used in my ShinyApp.
+
 saveRDS(ms, "ms_cert.RDS")
 saveRDS(hs, "hs_cert.RDS")
+
+# I saved age data as an RDS to be used in my ShinyApp.
 
 saveRDS(public_age_join, "public_age.RDS")
 saveRDS(private_age_join, "private_age.RDS")
 saveRDS(age, "age_total.RDS")
 saveRDS(age_plot, 'age.RDS')
 
+# I saved highest degree earned data as an RDS to be used in my ShinyApp.
+
 saveRDS(public_degree_join, "public_degree.RDS")
 saveRDS(private_degree_join, "private_degree.RDS")
 saveRDS(degree, "degree_total.RDS")
+
+# I saved years of teaching experience data as an RDS to be used in my ShinyApp.
 
 saveRDS(public_years_join, "public_years.RDS")
 saveRDS(private_years_join, "private_years.RDS")
 saveRDS(years_total, "year_total.RDS")
 
+# I saved degree and years data by state as an RDS to be used in my ShinyApp.
+
 saveRDS(state_degree, "state_degree.RDS")
 saveRDS(state_years, "state_years.RDS")
+
+# I saved total number of private and public teachers data throughout the years
+# as an RDS to be used in my ShinyApp.
 
 saveRDS(public_teachers, "public_teachers.RDS")
 saveRDS(private_teachers, "private_teachers.RDS")
@@ -40,7 +54,9 @@ saveRDS(private_teachers, "private_teachers.RDS")
 
 ```{r sass ms}
 
-# Load in certification data from SASS
+# This code chunk loads in certification data from SASS. I skipped first 3 rows 
+# because they were unnecessary title rows.
+
 certification <- read_excel("sass_data/sass1112_18042404_t2n.xlsx", skip = 3,
                             col_types = c('text', 
                                           'numeric', 
@@ -60,19 +76,35 @@ certification <- read_excel("sass_data/sass1112_18042404_t2n.xlsx", skip = 3,
                                           'major_only', 
                                           'neither'))
 
-# Select middle school data
+# I selected and cleaned the middle school data. Importing and renaming the 
+# column names above saved me a lot of steps here while trying to clean.
+ 
 ms <- certification %>%
   slice(2:6) %>%
   select(-cert_total) %>%
+  
+  # To plot by subject and percentage, with the fill as qualification, I had 
+  # to pivot longer.
+  
   pivot_longer(cols = -level_subject, 
                names_to = 'qualification', 
                values_to = 'percentage') %>%
+  
+  # I was careful about dropping NA values, because I wanted to make sure
+  # I didn't discard any useful data. I double checked before using this command.
+  
   drop_na() %>%
   filter(level_subject != 'General elementary education')
 
-# Plot middle school data
+# I plotted the middle school certification data to made sure it worked before 
+# loading it onto my Shiny App.
+
 ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) + 
   geom_col(position = 'dodge') + 
+  
+  # I originally had scale_color_brewer with the blues palette, but the light blue
+  # was too light, so I changed the colors manually.
+  
   scale_fill_manual(name = 'Teacher Qualification',
                     labels = c('Certification and Related Major',
                                'Certification Only',
@@ -80,6 +112,10 @@ ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) +
                                'Neither Qualification'),
                     values = c("steelblue", "steelblue2", "steelblue3", "steelblue4")) + 
   theme_bw() +
+  
+  # I debated whether or not to include titles since the shiny app also has
+  # places to insert titles. I decided the more descriptive, the better.
+  
   labs(title = 'Percentage of U.S. Middle School Students Taught By 
   Teachers with Various Qualifications in 2011-2012',
        subtitle = 'A majority of students are taught by science teachers without state 
@@ -91,18 +127,33 @@ ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) +
 ```
 
 ```{r sass hs}
-# Curate high school data
+
+# I curated high school data using a similar process as the middle school data
+# above.
+
 hs <- certification %>%
   slice(9:12) %>%
   select(-cert_total) %>%
+  
+  # This pivot_longer step allows me to plot by subject and percentage, with the
+  # fill as qualification.
+  
   pivot_longer(cols = -level_subject, 
                names_to = 'qualification', 
                values_to = 'percentage') %>%
   drop_na() %>%
   filter(level_subject != 'General elementary education')
 
+# I plotted an example graph that will be showcased through an interactive button 
+# where the user can choose to either display the middle school data above, or the
+# high school data displayed here.
+
 ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) + 
   geom_col(position = 'dodge') + 
+  
+  # This is an example where I used the scale_color_brewer. Note how the lightest
+  # blue doesn't quite show up on the white background.
+  
   scale_fill_brewer(name = 'Teacher Qualification', 
                     labels = c('Certification and Related Major',
                                'Certification Only',
@@ -120,7 +171,14 @@ ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) +
 ```
 
 ```{r nces, warning = FALSE}
-# warning = FALSE because converted symbol to numeric
+# I set warning = FALSE because I converted a symbol (that was meant to indicate 
+# insufficient data) to numeric, which translated to NA. I understand this
+# command may be tricky though, because I won't see other warnings. I made sure
+# there were no other warnings before I added this line.
+
+# This data set includes age, highest degree earned, and years of teaching 
+# experience for teachers in public and private schools throughout the years 
+# 1987-2018. I skipped the first 5 rows because they were unnecessary title rows.
 
 tabn209_10 <- read_excel("nces_data/tabn209.10.xls", 
                          skip = 5,
@@ -142,6 +200,9 @@ tabn209_10 <- read_excel("nces_data/tabn209.10.xls",
                   '2003-04_p', '2003-04_p_se', '2007-08_p', '2007-08_p_se', 
                   '2011-12_p', '2011-12_p_se','2017-18_p','2017-18_p_se'))
 
+# Separating the tibbles here by public and private school data is especially
+# helpful for later data wrangling.
+
 public <- tabn209_10 %>%
   slice(1:53)
 
@@ -151,15 +212,26 @@ private <- tabn209_10 %>%
 ```
 
 ```{r age_public}
-# Percentage values for public schools across all years
+
+# To isolate the median percentage values for age of teacher in public schools 
+# across all years, I had to clean up the data by first isolating the age data
+# segment.
+
 public_age_p <- public %>%
   slice(15:19) %>%
   select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
            `2007-08_p`, `2011-12_p`, `2017-18_p`)) %>%
+  
+  # This command is helpful in renaming, as I don't have to go through and
+  # manually rename everything. This allows for easier plotting, as users can
+  # easily understand what the year 1987-88 means.
+  
   rename_with(~tolower(gsub("_p", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
 
-# Percentage standard error values for public schools across all years
+# In order to plot standard error bars, I also isolated the percentage standard 
+# error values for public schools across all years.
+
 public_age_p_se <- public %>%
   slice(15:19) %>%
   select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
@@ -167,15 +239,30 @@ public_age_p_se <- public %>%
   rename_with(~tolower(gsub("_p_se", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
 
-# Merged tibble for percentage + standard errors
+# To plot the median and standard error bars on the same plot, I merged the 
+# two tibbles made above, joining by year and teacher characteristic.
+
 public_age_join <- left_join(public_age_p, 
                              public_age_p_se, 
                              by = c('year', 'teacher_char')) %>%
+  
+  # In order to actually plot the standard error bars, I had to calculate 
+  # the max and the min. I didn't find a simpler way of doing this, but I imagine
+  # there must be.
+  
   mutate(max = percentage + se,
          min = percentage - se) %>%
   mutate(type = "Public")
 
+# To make sure the plot would translate onto my ShinyApp, I plotted an example figure
+# here in this Markdown file, selecting only one age range.
+
 public_age_join %>%
+  
+  # On the Shiny App, users will be able to choose which age range they want to 
+  # display. I tried all of them here. Currently, it is displaying the `40 to 49`
+  # range.
+  
   filter(teacher_char == '40 to 49') %>%
   ggplot(aes(x = year, y = percentage)) +
   geom_point(size = 2) +
@@ -188,7 +275,14 @@ public_age_join %>%
 ```
 
 ```{r age_private}
-# Percentage values for public schools across all years
+
+# This code chunk displays the same cleaning process as above. This is just
+# for private schools instead of public schools.
+
+# To isolate the median percentage values for age of teacher in private schools 
+# across all years, I cleaned up the data by first isolating the age data
+# segment.
+
 private_age_p <- private %>%
   slice(15:19) %>%
   select(c('teacher_char', `1987-88_p`, `1990-91_p`, `1999-2000_p`, `2003-04_p`,
@@ -196,7 +290,9 @@ private_age_p <- private %>%
   rename_with(~tolower(gsub("_p", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'percentage')
 
-# Percentage standard error values for public schools across all years
+# In order to plot standard error bars, I also isolated the percentage standard 
+# error values for private schools across all years.
+
 private_age_p_se <- private %>%
   slice(15:19) %>%
   select(c('teacher_char', `1987-88_p_se`, `1990-91_p_se`, `1999-2000_p_se`, 
@@ -204,7 +300,9 @@ private_age_p_se <- private %>%
   rename_with(~tolower(gsub("_p_se", "", .x))) %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'se')
 
-# Merged tibble for percentage + standard errors
+# To plot the median and standard error bars on the same plot, I merged the 
+# two tibbles made above, joining by year and teacher characteristic.
+
 private_age_join <- left_join(private_age_p, 
                              private_age_p_se, 
                              by = c('year', 'teacher_char')) %>%
@@ -215,14 +313,37 @@ private_age_join <- left_join(private_age_p,
 ```
 
 ```{r age_total}
+
+# I wanted to display public and private school on the same figure,
+# so I added a column called `type` when I was cleaning up the private and public
+# school tibbles that identified them as public or private. Then, I binded the
+# rows here. I decided against using a join function, because I had already 
+# cleaned up the data in the same way, so I knew the format was the same. I also
+# wanted all the rows in both tibbles.
+
 age <- bind_rows(private_age_join, public_age_join)
 
+# To animate the plot, I modeled the Gapminder plot of countries GDP throughout
+# the years. This graph is on my Github profile page.
+
 age_plot <- age %>%
+  
+  # In order to plot by year, I cleaned up the year variable, and converted it
+  # to an integer. If I kept year as a double, it would display years as decimals,
+  # which is non-intuitive and confusing.
+  
   mutate(year_animate = map_chr(year, ~strsplit(., "-")[[1]][1])) %>%
   mutate(year_animate = as.integer(year_animate)) %>%
+  
+  # In addition, since my age ranges were not in alphanumerical order, I
+  # manually reordered them by converting them to factors and setting a order.
+  
   mutate(age_range = factor(teacher_char, 
                                levels = c('Under 30', '30 to 39', '40 to 49',
                                           '50 to 59', '60 and over')))
+
+# I plotted the figure here with the respective error bars and animation, so
+# I could then save it as a gif file and upload it to my ShinyApp.
 
 age_ani_figure <- ggplot(age_plot, aes(x = age_range, y = percentage, color = type)) +
   geom_point(size = 3) + 
@@ -410,22 +531,29 @@ percent_map <- function(var, color, legend.title, min = 0, max = 100) {
 ```
 
 ```{r import_state}
-tabn209_30 <- read_excel("nces_data/tabn209.30.xls", skip = 3,
+tabn209_30 <- read_excel("nces_data/tabn209.30.xls", skip = 4,
     col_types = c("text", "skip", "skip", 
-        "text", "text", "text", "text", "numeric", 
-        "text", "text", "numeric", "text", 
-        "text", "text", "text", "text", "text", 
-        "text", "text", "numeric", "text", 
-        "text", "numeric", "text", "text", 
-        "numeric", "text", "text", "numeric", 
-        "text", "text", "numeric", "text"))
+        "text", "skip", "skip", "text", "skip", 
+        "skip", "text", "skip", "skip", 
+        "text", "skip", "skip", "text", "skip", 
+        "skip", "text", "skip", "skip", 
+        "text", "skip", "skip", "text", 
+        "skip", "skip", "text", "skip", 
+        "skip", "text", "skip", "skip"),
+    col_names = c('state', 
+                  "Less than bachelor's", 
+                  "Bachelor's", 
+                  "Master's",
+                  "Education specialist or doctor's",
+                 'Less than 3', '3 to 9', '10 to 20', 'Over 20', 
+                 'Elementary', 'Secondary'))
   
 ```
+
 ```{r state_degree}
 state_degree <- tabn209_30 %>%
-  select(c(1, 2, 5, 8, 11)) %>%
-  rename(state = `...1`,
-         less = `Less than bachelor's`,
+  select(1:5) %>%
+  rename(less = `Less than bachelor's`,
          bachelor = `Bachelor's`,
          master = `Master's`,
          eddoc = `Education specialist or doctor's`) %>%
@@ -441,9 +569,9 @@ state_degree <- tabn209_30 %>%
 percent_map(var = state_degree$master, "darkgreen", "% with Bachelor's")
 ```
 ```{r state_years, warning = FALSE}
+
 state_years <- tabn209_30 %>%
-  select(c(1, 14, 17, 20, 23)) %>%
-  rename(state = `...1`) %>%
+  select(c(1, 6:9)) %>%
   drop_na(state) %>%
   mutate(state = map_chr(state, ~gsub("\\.", "", .))) %>%
   slice(3:53) %>%
@@ -456,6 +584,12 @@ state_years <- tabn209_30 %>%
 percent_map(var = state_years$`Less than 3`, "darkgreen", "% Less than 3 years")
 ```
 ```{r model}
+
+# For my linear regression model, I decided to model the change in number of
+# teachers over time. Thus, I first cleaned up my variable names, pivoted
+# longer to graph properly, and made sure to add a `type` called public or private
+# so I could identify the data later when plotting together.
+
 public_teachers <- public %>%
   slice(2) %>%
   select(`teacher_char`, `1987-88_n`, `1990-91_n`, `1999-2000_n`, `2003-04_n`, 
@@ -465,6 +599,9 @@ public_teachers <- public %>%
   pivot_longer(cols = -teacher_char, names_to = 'year', values_to = 'teachers') %>%
   mutate(year = as.numeric(year),
          type = "public") 
+
+# Private school cleaning process follows the same procedure as the public 
+# school cleaning process above.
 
 private_teachers <- private %>%
   slice(2) %>%
@@ -476,14 +613,19 @@ private_teachers <- private %>%
   mutate(year = as.numeric(year),
          type = "private") 
 
+# This lm function is a handy way of finding coefficients. I had to make sure
+# to convert `year` to double, because otherwise, I would have gotten a 
+# coefficient for every year range to number of teachers.
+
 fit_public <- lm(teachers ~ year, data = public_teachers)
 fit_private <- lm(teachers ~ year, data = private_teachers)
   
+# The fitted() command is nice and handy here, as I can plot both the real 
+# data plots and the linear regression line.
+
 ggplot(private_teachers, aes(x = year, y = teachers)) + 
   geom_point() + 
   geom_line(aes(x = year, y = fitted(fit_private)))
-
-
 
 ```
 
