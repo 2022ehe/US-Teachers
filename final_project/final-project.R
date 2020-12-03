@@ -11,6 +11,10 @@ library(shiny)
 library(tidyverse)
 library(shinythemes)
 library(gganimate)
+library(maps)
+library(mapproj)
+
+source("helper.R")
 
 # Reads in data
 ms_cert <- readRDS("ms_cert.RDS")
@@ -22,6 +26,7 @@ public_degree <- readRDS("public_degree.RDS")
 private_degree <- readRDS("private_degree.RDS")
 public_years <- readRDS("public_years.RDS")
 private_years <- readRDS("private_years.RDS")
+state_degree <- readRDS("state_degree.RDS")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -81,21 +86,6 @@ ui <- navbarPage(
                           plotOutput("private_age_plot"),
                       align = "center")
              ))),
-             # sidebarLayout(position = "left",
-             #   sidebarPanel(
-             #     selectInput(
-             #       "plot_type_age",
-             #       "Age Range",
-             #       c("Under 30" = "a", 
-             #         "30 to 39" = "b", 
-             #         "40 to 49" = "c",
-             #         "50 to 59" = "d",
-             #         "60 and over" = "e")
-             #     )),
-             #   mainPanel(plotOutput("public_age_plot"),
-             #             plotOutput("private_age_plot"),
-             #             ))
-           #)),
   
   # tabPanel("Test",
   #          h2("Teacher Age Data"),
@@ -105,6 +95,40 @@ ui <- navbarPage(
            fluidPage(
              titlePanel("Teacher Qualifications"),
              fluidRow(
+               column(12,
+                      h4("Percentage of U.S. Students Taught by Teachers with
+                        Various Qualifications in 2011-2012"),
+                      align = "left"),
+               br(),
+               column(4, 
+                      selectInput(
+                        "plot_type",
+                        "Grade Level",
+                        c("Middle School (Grades 6-8)" = "a", 
+                          "High School (Grades 9-12)" = "b")),
+                      align = "left"
+               ),
+               column(7, 
+                      plotOutput("cert_plot"),
+               align = "center"),
+               br(),
+               column(3, 
+                      selectInput(
+                        "var",
+                        "Highest Degree Earned",
+                        c("Less than Bachelor's" = "a", 
+                          "Bachelor's" = "b", 
+                          "Master's" = "c",
+                          "Education Specialist or Doctor's" = "d")),
+                      align = "left", 
+                      sliderInput("range", 
+                                  label = "Range of interest:",
+                                  min = 0, max = 100, value = c(0, 100))
+                      ),
+               column(7, 
+                      plotOutput("state_degree_plot"),
+                      align = "center"),
+               br(),
                column(3,
                       selectInput(
                         "plot_type_degree",
@@ -120,7 +144,13 @@ ui <- navbarPage(
                       plotOutput("public_degree_plot"),
                       plotOutput("private_degree_plot"),
                       align = "center"),
-               br(),
+             )
+             )),
+
+  tabPanel("Teacher Experience",
+           fluidPage(
+             titlePanel("Teacher Experience"),
+             fluidRow(
                column(3, 
                       selectInput(
                         "plot_type_years",
@@ -136,33 +166,23 @@ ui <- navbarPage(
                       plotOutput("private_years_plot"),
                       align = "center"),
                br(),
-               column(12,
-                      h4("Percentage of U.S. Students Taught by Teachers with
-                        Various Qualifications in 2011-2012"),
-                      align = "left"),
-               br(),
-               column(4, 
+               column(3, 
                       selectInput(
-                        "plot_type",
-                        "Grade Level",
-                        c("Middle School (Grades 6-8)" = "a", 
-                          "High School (Grades 9-12)" = "b")),
-                      align = "left"
+                        "var",
+                        "Highest Degree Earned",
+                        c("Less than Bachelor's" = "a", 
+                          "Bachelor's" = "b", 
+                          "Master's" = "c",
+                          "Education Specialist or Doctor's" = "d")),
+                      align = "left", 
+                      sliderInput("range", 
+                                  label = "Range of interest:",
+                                  min = 0, max = 100, value = c(0, 100))
                ),
                column(7, 
-                      plotOutput("cert_plot")),
-                      align = "center"),
-             )),
-           #   sidebarLayout(
-           #     sidebarPanel(
-           #       selectInput(
-           #         "plot_type",
-           #         "Grade Level",
-           #         c("Middle School (Grades 6-8)" = "a", 
-           #           "High School (Grades 9-12)" = "b")
-           #       )),
-           #     mainPanel(plotOutput("cert_plot")))
-           # )),
+                      plotOutput("state_degree_plot"),
+                      align = "center")
+             ))),
   
   tabPanel("Discussion",
            titlePanel("Why I Chose this Data"),
@@ -206,7 +226,8 @@ server <- function(input, output) {
       labs(title = 'Age Ranges of U.S. Teachers in Public Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
-           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') + 
+      theme_bw()
   })
   
   output$private_age_plot <- renderPlot({
@@ -230,7 +251,8 @@ server <- function(input, output) {
       labs(title = 'Age Ranges of U.S. Teachers in Private Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
-           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') + 
+      theme_bw()
   })
   
   output$animated_age_plot <- renderImage({
@@ -259,11 +281,12 @@ server <- function(input, output) {
     ggplot(public_data, aes(x = year, y = percentage)) + 
       geom_point(size = 2) + 
       geom_errorbar(aes(x = year, ymin = min, ymax = max), 
-                    width=0.1, color = 'green', alpha=0.9, size=1) + 
+                    width=0.1, color = 'deepskyblue', alpha=0.9, size=1) + 
       labs(title = 'Highest Degree Earned for U.S. Teachers in Public Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
-           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') + 
+      theme_bw()
   })
   
   output$private_degree_plot <- renderPlot({
@@ -283,11 +306,12 @@ server <- function(input, output) {
     ggplot(private_data, aes(x = year, y = percentage)) + 
       geom_point(size = 2) + 
       geom_errorbar(aes(x = year, ymin = min, ymax = max), 
-                    width=0.1, color = 'green', alpha=0.9, size=1) + 
+                    width=0.1, color = 'royalblue3', alpha=0.9, size=1) + 
       labs(title = 'Highest Degree Earned for U.S. Teachers in Private Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
-           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') +
+      theme_bw()
   })
   
   output$public_years_plot <- renderPlot({
@@ -305,11 +329,12 @@ server <- function(input, output) {
     ggplot(public_data, aes(x = year, y = percentage)) + 
       geom_point(size = 2) + 
       geom_errorbar(aes(x = year, ymin = min, ymax = max), 
-                    width=0.1, color = 'blue', alpha=0.9, size=1) + 
+                    width=0.1, color = 'deepskyblue', alpha=0.9, size=1) + 
       labs(title = 'Years of Teaching Experience for U.S. Teachers in Public Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
-           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') + 
+      theme_bw()
   })
   
   output$private_years_plot <- renderPlot({
@@ -327,11 +352,12 @@ server <- function(input, output) {
     ggplot(private_data, aes(x = year, y = percentage)) + 
       geom_point(size = 2) + 
       geom_errorbar(aes(x = year, ymin = min, ymax = max), 
-                    width=0.1, color = 'blue', alpha=0.9, size=1) + 
+                    width=0.1, color = 'royalblue3', alpha=0.9, size=1) + 
       labs(title = 'Years of Teaching Experience for U.S. Teachers in Private Schools from 1987-2018',
            x = 'Year',
            y = 'Percentage of Teachers', 
-           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics') +
+      theme_bw()
   })
   
   output$cert_plot <- renderPlot({
@@ -350,21 +376,76 @@ server <- function(input, output) {
       
       x <- hs_cert
     )
-   ggplot(x, aes(x = level_subject, y = percentage, fill = qualification)) + 
-    geom_col(position = 'dodge') + 
-    scale_fill_brewer(name = 'Teacher Qualification', 
-                      labels = c('Certification and Related Major',
-                                 'Certification Only',
-                                 'Related Major Only', 
-                                 'Neither Qualification'),
-                      palette = 'Blues') + 
-    theme_bw() +
-    labs(x = 'Class Subject',
-         y = 'Percentage of Students',
-         caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
+    ggplot(x, aes(x = level_subject, y = percentage, fill = qualification)) +
+      geom_col(position = 'dodge') +
+      scale_fill_manual(
+        name = 'Teacher Qualification',
+        labels = c(
+          'Certification and Related Major',
+          'Certification Only',
+          'Related Major Only',
+          'Neither Qualification'
+        ),
+        values = c("steelblue", "steelblue2", "steelblue3", "steelblue4")
+      ) +
+      theme_bw() +
+      labs(x = 'Class Subject',
+           y = 'Percentage of Students',
+           caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
 
     
   })
+  
+  output$state_degree_plot <- renderPlot({
+    # Generate type based on input$plot_type from ui
+    
+    data <- switch(input$var, 
+                   "a" = state_degree$less,
+                   "b" = state_degree$bachelor,
+                   "c" = state_degree$master,
+                   "d" = state_degree$eddoc)
+    
+    color <- switch(input$var, 
+                    "a" = "darkgreen",
+                    "b" = "black",
+                    "c" = "darkorange",
+                    "d" = "darkviolet")
+    
+    legend <- switch(input$var, 
+                     "a" = "% with Less than Bachelor's",
+                     "b" = "% with Bachelor's",
+                     "c" = "% with Master's",
+                     "d" = "% with Education Specialist or Doctor's")
+
+    percent_map(data, color, legend, input$range[1], input$range[2])
+    
+  })
+  
+  output$state_years_plot <- renderPlot({
+    # Generate type based on input$plot_type from ui
+    
+    data <- switch(input$var, 
+                   "a" = state_years$`Less than 3`,
+                   "b" = state_years$`3 to 9`,
+                   "c" = state_years$`10 to 20`,
+                   "d" = state_years$`Over 20`)
+    
+    color <- switch(input$var, 
+                    "a" = "darkgreen",
+                    "b" = "black",
+                    "c" = "darkorange",
+                    "d" = "darkviolet")
+    
+    legend <- switch(input$var, 
+                     "a" = "% with Less than 3 years",
+                     "b" = "% with 3-9 years",
+                     "c" = "% with 10-20 years",
+                     "d" = "% with Over 20 years")
+    
+    percent_map(data, color, legend, input$range[1], input$range[2])
+    
+  })
+  
   # output$my_table <- DT::renderDataTable({
   #   public_age
   # })

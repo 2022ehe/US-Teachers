@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(readxl)
 library(gganimate)
+library(maps)
+library(mapproj)
 ```
 
 ```{r rds}
@@ -22,6 +24,8 @@ saveRDS(public_degree_join, "public_degree.RDS")
 saveRDS(private_degree_join, "private_degree.RDS")
 saveRDS(public_years_join, "public_years.RDS")
 saveRDS(private_years_join, "private_years.RDS")
+saveRDS(state_degree, "state_degree.RDS")
+saveRDS(state_years, "state_years.RDS")
 ```
 
 ```{r sass ms}
@@ -45,7 +49,6 @@ certification <- read_excel("sass_data/sass1112_18042404_t2n.xlsx", skip = 3,
                                           'cert_only', 
                                           'major_only', 
                                           'neither'))
-# certification$...2 <- as.numeric(certification$...2)
 
 # Select middle school data
 ms <- certification %>%
@@ -60,12 +63,12 @@ ms <- certification %>%
 # Plot middle school data
 ggplot(ms, aes(x = level_subject, y = percentage, fill = qualification)) + 
   geom_col(position = 'dodge') + 
-  scale_fill_brewer(name = 'Teacher Qualification', 
+  scale_fill_manual(name = 'Teacher Qualification',
                     labels = c('Certification and Related Major',
                                'Certification Only',
-                               'Related Major Only', 
+                               'Related Major Only',
                                'Neither Qualification'),
-                    palette = 'Blues') + 
+                    values = c("steelblue", "steelblue2", "steelblue3", "steelblue4")) + 
   theme_bw() +
   labs(title = 'Percentage of U.S. Middle School Students Taught By 
   Teachers with Various Qualifications in 2011-2012',
@@ -106,7 +109,9 @@ ggplot(hs, aes(x = level_subject, y = percentage, fill = qualification)) +
        caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
 ```
 
-```{r nces}
+```{r nces, warning = FALSE}
+# warning = FALSE because converted symbol to numeric
+
 tabn209_10 <- read_excel("nces_data/tabn209.10.xls", 
                          skip = 5,
     col_types = c("text", "numeric", "skip", 
@@ -342,6 +347,88 @@ private_years_join <- left_join(private_years_p,
          min = percentage - se) %>%
   mutate(type = "Private")
 ```
+
+```{r map_function}
+percent_map <- function(var, color, legend.title, min = 0, max = 100) {
+
+  # generate vector of fill colors for map
+  shades <- colorRampPalette(c("white", color))(100)
+  
+  # constrain gradient to percents that occur between min and max
+  var <- pmax(var, min)
+  var <- pmin(var, max)
+  percents <- as.integer(cut(var, 100, 
+    include.lowest = TRUE, ordered = TRUE))
+  fills <- shades[percents]
+  
+  # plot choropleth map
+  map("state", fill = TRUE, col = fills, resolution = 0,
+    lty = 1, lwd = 1, projection = "polyconic", 
+    myborder = 0, mar = c(0,0,0,0))
+  
+  # add a legend
+  inc <- (max - min) / 4
+  legend.text <- c(paste0("No data"),
+    paste0(min + inc, " %"),
+    paste0(min + 2 * inc, " %"),
+    paste0(min + 3 * inc, " %"),
+    paste0(max, " % or more"))
+  
+  legend("bottomleft", 
+    cex = 0.75,
+    legend = legend.text, 
+    fill = shades[c(1, 25, 50, 75, 100)], 
+    title = legend.title)
+}
+```
+
+```{r import_state}
+tabn209_30 <- read_excel("nces_data/tabn209.30.xls", skip = 3,
+    col_types = c("text", "skip", "skip", 
+        "text", "text", "text", "text", "numeric", 
+        "text", "text", "numeric", "text", 
+        "text", "text", "text", "text", "text", 
+        "text", "text", "numeric", "text", 
+        "text", "numeric", "text", "text", 
+        "numeric", "text", "text", "numeric", 
+        "text", "text", "numeric", "text"))
+  
+```
+```{r state_degree}
+state_degree <- tabn209_30 %>%
+  select(c(1, 2, 5, 8, 11)) %>%
+  rename(state = `...1`,
+         less = `Less than bachelor's`,
+         bachelor = `Bachelor's`,
+         master = `Master's`,
+         eddoc = `Education specialist or doctor's`) %>%
+  drop_na(state) %>%
+  mutate(state = map_chr(state, ~gsub("\\.", "", .))) %>%
+  slice(3:53) %>%
+  mutate(less = as.numeric(less),
+         bachelor = as.numeric(bachelor),
+         master = as.numeric(master),
+         eddoc = as.numeric(eddoc)) %>%
+  mutate_all(~replace(., is.na(.), 0))
+  
+percent_map(var = state_degree$less, "darkgreen", "% less")
+```
+```{r state_years, warning = FALSE}
+state_years <- tabn209_30 %>%
+  select(c(1, 14, 17, 20, 23)) %>%
+  rename(state = `...1`) %>%
+  drop_na(state) %>%
+  mutate(state = map_chr(state, ~gsub("\\.", "", .))) %>%
+  slice(3:53) %>%
+  mutate(`Less than 3` = as.numeric(`Less than 3`),
+         `3 to 9` = as.numeric(`3 to 9`),
+         `10 to 20` = as.numeric(`10 to 20`),
+         `Over 20` = as.numeric(`Over 20`)) %>%
+  mutate_all(~replace(., is.na(.), 0))
+  
+percent_map(var = state_years$`Less than 3`, "darkgreen", "% Less than 3 years")
+```
+
 
 
 
