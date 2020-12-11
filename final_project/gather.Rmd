@@ -12,6 +12,10 @@ library(readxl)
 library(gganimate)
 library(maps)
 library(mapproj)
+library(rstanarm)
+library(broom.mixed)
+library(gtsummary)
+library(gt)
 ```
 
 ```{r rds}
@@ -588,7 +592,7 @@ percent_map <- function(var, color, legend.title, min = 0, max = 100) {
     paste0(min + inc, " %"),
     paste0(min + 2 * inc, " %"),
     paste0(min + 3 * inc, " %"),
-    paste0(max, " % or more"))
+    paste0(max, " %"))
   
   legend("bottomleft", 
     cex = 0.75,
@@ -655,20 +659,28 @@ state_degree <- tabn209_30 %>%
   # To plot NA values, I changed them to 0, and then indicated on the legend 
   # that 0 meant NA.
   
-  mutate_all(~replace(., is.na(.), 0))
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  
+  # I removed  Alaska and Hawaii since they are not on the continental U.S.
+  
+  slice(-2, -12)
 
-shades <- colorRampPalette(c("white", 'darkgreen'))(100)
-var <- state_degree$less
-var_max <- pmax(var, 0)
-var_min <- pmin(var, 100)
-var
-as.integer(cut(var, 100))
-percents
-percents <- as.integer(cut(var, 100, 
-                       include.lowest = TRUE, ordered = TRUE))
-fills <- shades[percents]
-percent_map(var = state_degree$less, "darkgreen", "% with Less")
 ```
+
+```{r}
+var <- c(1, 2, 3)
+percents <- as.integer(cut(var, 100, 
+                               include.lowest = TRUE, ordered = TRUE))
+fills <- shades[percents]
+
+map("state", fill = TRUE, col = fills, resolution = 0,
+        lty = 1, lwd = 1, projection = "polyconic", 
+        myborder = 0, mar = c(0,0,0,0))
+
+
+```
+
+
 
 ```{r state_years, warning = FALSE}
 # I set warning = FALSE here, because when I convert to numeric, NAs are
@@ -693,7 +705,11 @@ state_years <- tabn209_30 %>%
   # In order to plot the NA values, I turned them to 0, and indicated on the scale
   # that white meant insufficient data.
   
-  mutate_all(~replace(., is.na(.), 0))
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  
+  # I removed  Alaska and Hawaii since they are not on the continental U.S.
+  
+  slice(-2, -12)
   
 percent_map(var = state_years$`Less than 3`, "darkgreen", "% Less than 3 years")
 ```
@@ -727,12 +743,24 @@ private_teachers <- private %>%
   mutate(year = as.numeric(year),
          type = "private") 
 
-# This lm function is a handy way of finding coefficients. I had to make sure
+# This stanglm function is a handy way of finding coefficients. I had to make sure
 # to convert `year` to double, because otherwise, I would have gotten a 
 # coefficient for every year range to number of teachers.
 
-fit_public <- lm(teachers ~ year, data = public_teachers)
-fit_private <- lm(teachers ~ year, data = private_teachers)
+fit_public <- stan_glm(teachers ~ year, data = public_teachers, refresh = 0)
+fit_private <- stan_glm(teachers ~ year, data = private_teachers, refresh = 0)
+
+tbl_regression(fit_public, intercept = FALSE) %>%
+  as_gt() %>%
+    tab_header(title = "Regression on Number of Teachers", 
+               subtitle = "The Effect of Year on Number of Teachers in Public Schools") %>%
+    tab_source_note("Source: National Center for Educational Statistics")
+
+tbl_regression(fit_private, intercept = FALSE) %>%
+  as_gt() %>%
+    tab_header(title = "Regression on Number of Teachers", 
+               subtitle = "The Effect of Year on Number of Teachers in Private Schools") %>%
+    tab_source_note("Source: National Center for Educational Statistics")
   
 # The fitted() command is nice and handy here, as I can plot both the real 
 # data plots and the linear regression line.

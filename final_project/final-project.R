@@ -211,9 +211,13 @@ ui <- navbarPage(
                           "Education Specialist or Doctor's" = "d")),
                       align = "left"
                       ),
-               column(7,
+               column(6,
                       plotOutput("state_degree_plot"),
                       align = "center"),
+               column(3, 
+                      p("This plot shows the relative percentages of teachers
+                        in each state compared to other states who have a
+                        certain degree as the highest degree earned."),
                br(),
                column(3,
                       selectInput(
@@ -679,9 +683,9 @@ server <- function(input, output) {
     )}, deleteFile = FALSE)
   
   
-  # output$my_table <- DT::renderDataTable({
-  #   public_age
-  # })
+  output$my_table <- DT::renderDataTable({
+    public_age
+  })
 
 }
 
