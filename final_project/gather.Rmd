@@ -656,9 +656,20 @@ state_degree <- tabn209_30 %>%
   # that 0 meant NA.
   
   mutate_all(~replace(., is.na(.), 0))
-  
-percent_map(var = state_degree$master, "darkgreen", "% with Bachelor's")
+
+shades <- colorRampPalette(c("white", 'darkgreen'))(100)
+var <- state_degree$less
+var_max <- pmax(var, 0)
+var_min <- pmin(var, 100)
+var
+as.integer(cut(var, 100))
+percents
+percents <- as.integer(cut(var, 100, 
+                       include.lowest = TRUE, ordered = TRUE))
+fills <- shades[percents]
+percent_map(var = state_degree$less, "darkgreen", "% with Less")
 ```
+
 ```{r state_years, warning = FALSE}
 # I set warning = FALSE here, because when I convert to numeric, NAs are
 # introduced by coercion. This was purposeful, because the data uses a symbol

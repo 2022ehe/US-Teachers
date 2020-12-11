@@ -87,30 +87,49 @@ ui <- navbarPage(
            Survey to analyze trends in the quantity and quality of teachers
            across the U.S. and comparing public vs. private schools.")),
            
-           column(3, 
+           column(6, 
                   imageOutput("country_list", height = "100%", width = "100%")),
            
            column(12,
            h1('About Me'),
            p("My name is Emily He and I'm an undergraduate pursuing an S.B. in 
            Bioengineering. Feel free to contact me at ", 
-             a("emily_he@college.harvard.edu", href = "mailto: emily_he@college.harvard.edu"),
-             "."),
-           
-           p("You can find the code to this project on my  ",
-             a("Github", href = "https://github.com/2022ehe/US-Teachers"),
-             ".")),
-           
-           column(12, 
-           imageOutput("headshot", height = "100%", width = "100%"),
-           align = 'center')
+             a("emily_he@college.harvard.edu", 
+               href = "mailto: emily_he@college.harvard.edu"),
+             ". You can find the code to this project on my  ",
+             a("Github", 
+               href = "https://github.com/2022ehe/US-Teachers"),
+             "."))
   ),
   
   tabPanel("Teacher Age Ranges",
            fluidPage(
              titlePanel("Age of Teachers in U.S. Schools from 1987-2018"),
              fluidRow(
-               column(12, 
+               column(6, 
+                      p("Let's first take a look at the age ranges of teachers
+                        throughout the years."),
+                      p("One would expect the number of
+                        teachers to match the fluctuations in U.S. population. 
+                        If not, it could indicate teaching is either an 
+                        unsatisfactory or extremely appealing position."),
+                      p("The U.S. experienced a baby boom, i.e. increase in 
+                        birth rate, between 1946 and 1964 as the WWII brought 
+                        around an age of prosperity and economic growth. This
+                        matches the animation shown on the right, as there is 
+                        a peak of teachers in the 40-47 age range during years 
+                        1987-90, and a corresponding increase in the number of
+                        teachers aged 50-59 in the 1995-2004. The numbers then
+                        equilibrate at around 20% in each age range. It should 
+                        also be noted that the number of teachers aged 60-69 
+                        increases relatively rapidly from 2002-2012 as well."),
+                      p("This data suggests that the teaching profession seems
+                        to match up roughly with U.S. fluctuations in population,
+                        and thus age cannot be used to show any trends about how
+                        appealing the teaching profession is, or how there
+                        might have been a teacher shortage/surplus."),
+                      ),
+               column(6, 
                       imageOutput("animated_age_plot", 
                                   height = "100%",
                                   width = "100%"),
@@ -118,7 +137,7 @@ ui <- navbarPage(
                br(),
                br(),
                h3("Explore the Data"),
-               column(4,
+               column(2,
                       selectInput(
                         "plot_type_age",
                         "Age Range",
@@ -128,11 +147,19 @@ ui <- navbarPage(
                           "50 to 59" = "d",
                           "60 and over" = "e"))
                 ),
-               column(7, 
+               column(6, 
                       plotOutput("all_age_plot"),
-                      # plotOutput("public_age_plot"),
-                      # plotOutput("private_age_plot"),
-                      align = "center")
+                      align = "center"),
+               column(4, 
+                      p("The trends between public and private schools also 
+                        tend to match each other through the years, but in the
+                        60-69 age range, it's consistent throughout all the years
+                        that private schools have a higher percentage. This trend
+                        of private schools having a higher proportion of older
+                        teachers is quite interesting as it could indicate that
+                        teachers are satisfied with their career teaching in 
+                        a private school and decide to remain until, or even
+                        after, retirement age."))
              ))),
   
   tabPanel("Teacher Qualifications",
@@ -143,7 +170,7 @@ ui <- navbarPage(
                         Various Qualifications in 2011-2012"),
                       align = "left"),
                br(),
-               column(4,
+               column(3,
                       selectInput(
                         "plot_type",
                         "Grade Level",
@@ -151,18 +178,25 @@ ui <- navbarPage(
                           "High School (Grades 9-12)" = "b")),
                       align = "left"
                ),
-               column(7,
+               column(6,
                       plotOutput("cert_plot"),
-               align = "center"),
-               br(),
-               column(12, 
+                      align = "center"),
+               column(3,
                       p("Quite a high percentage of middle school students are 
-                      taught by teachers who do not have a teaching certification 
-                      or a major related to their subject, especially for science 
-                      subjects. The standard is much higher for high school students, 
-                      as over 50% of students are taught by teachers who have 
-                      certification and/or major related to their teaching subject.")
-                 ),
+                        taught by teachers who do not have a teaching certification 
+                        or a major related to their subject. This is especially 
+                        concerning for science subjects as ~60% of science students
+                        are taught by teachers with neither qualification. Since 
+                        middle school is the time where students lay their 
+                        educational foundation and start to develop
+                        interests in certain subjects, this information
+                        is mildly alarming."),
+                      p("The standard is much higher for high school students, 
+                        as over 50% of students are taught by teachers who have 
+                        certification and/or major related to their teaching 
+                        subject. This makes sense as high school subjects 
+                        become more specialized and advanced, meaning that 
+                        teachers would likely need to be more qualified.")),
                br(),
                column(12,
                       h2("Highest Degree Earned Among U.S. Teachers in 2011-2012"),
@@ -264,9 +298,14 @@ ui <- navbarPage(
 
   )
 
-# Define server logic required to draw all plots
+# Define server logic required to create all plots
+
 server <- function(input, output) {
+  
+  # Renders plot of teacher age in public schools
+  
   output$public_age_plot <- renderPlot({
+    
     # Generate type based on input$plot_type from ui
 
     public_data <- switch(input$plot_type_age, 
@@ -291,6 +330,8 @@ server <- function(input, output) {
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics') + 
       theme_bw()
   })
+  
+  # Renders plot of teacher age in private schools
   
   output$private_age_plot <- renderPlot({
     
@@ -317,6 +358,8 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  # Renders plot of teacher age in public and private schools
+  
   output$all_age_plot <- renderPlot({
     
     data <- switch(input$plot_type_age, 
@@ -342,6 +385,9 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  # Renders animated plot of teacher age in public and private schools throughout 
+  # the years
+  
   output$animated_age_plot <- renderImage({
     # Return a list containing the filename
     list(src = "age.gif",
@@ -350,6 +396,8 @@ server <- function(input, output) {
          # height = 300,
          # alt = "This is alternate text"
     )}, deleteFile = FALSE)
+  
+  # Renders plot of teacher degrees in public schools
   
   output$public_degree_plot <- renderPlot({
     
@@ -376,6 +424,8 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  # Renders plot of teacher degrees in private schools
+  
   output$private_degree_plot <- renderPlot({
     
     private_data <- switch(input$plot_type_degree, 
@@ -400,6 +450,8 @@ server <- function(input, output) {
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics') +
       theme_bw()
   })
+  
+  # Renders plot of teacher degrees in public and private schools
   
   output$all_degree_plot <- renderPlot({
     
@@ -426,6 +478,8 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  # Renders plot of teacher years of experience in public schools
+  
   output$public_years_plot <- renderPlot({
     
     public_data <- switch(input$plot_type_years, 
@@ -449,6 +503,8 @@ server <- function(input, output) {
       theme_bw()
   })
   
+  # Renders plot of teacher years of experience in private schools
+  
   output$private_years_plot <- renderPlot({
     
     private_data <- switch(input$plot_type_years, 
@@ -471,6 +527,8 @@ server <- function(input, output) {
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics') +
       theme_bw()
   })
+  
+  # Renders plot of teacher years of experience in public and private schools 
   
   output$all_years_plot <- renderPlot({
     
@@ -521,7 +579,7 @@ server <- function(input, output) {
           'Related Major Only',
           'Neither Qualification'
         ),
-        values = c("steelblue", "steelblue2", "steelblue3", "steelblue4")
+        values = c("darkorchid3", "steelblue2", "mediumvioletred", "thistle4")
       ) +
       theme_bw() +
       labs(x = 'Class Subject',
@@ -583,8 +641,6 @@ server <- function(input, output) {
   
   output$model_plot <- renderPlot({
     
-    #data <- private_teachers
-    
     ifelse(input$var == 'a', 
            x <- public_teachers,
            x <- private_teachers)
@@ -601,6 +657,8 @@ server <- function(input, output) {
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
   }
   )
+  
+  # Renders images on the About tab
   
   output$country_list <- renderImage({
     # Return a list containing the filename
