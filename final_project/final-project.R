@@ -100,7 +100,7 @@ ui <- navbarPage(
              a("Github", 
                href = "https://github.com/2022ehe/US-Teachers"),
              "."))
-  ),
+           ),
   
   tabPanel("Teacher Age Ranges",
            fluidPage(
@@ -262,8 +262,7 @@ ui <- navbarPage(
                         degree. However, public schools have a consistently higher
                         percentage of teachers with Master and Education Specialist
                         degrees."))
-             ))
-             ),
+             ))),
 
   tabPanel("Teacher Experience",
            fluidPage(
@@ -279,10 +278,24 @@ ui <- navbarPage(
                           "Over 20 years" = "d")),
                       align = "left"
                ),
-               column(7,
+               column(6,
                       plotOutput("state_years_plot"),
                       align = "center"),
+               column(3,
+                      p("This map also showcases relative percentages, i.e.
+                        values are normalized to the other states. It's interesting
+                        to see that the states with the most teachers with the 
+                        least years of teaching experience are Arizona and Utah.
+                        There does not seem to be any clear trend or clusters.")),
                br(),
+               column(3,
+                      p("There are no clear trends when looking at the years of
+                        teaching experience between public and private schools.
+                        However, it is interesting to note that private schools
+                        consistently have a higher percentage of teachers with 
+                        Less than 3 years of teaching experience. In addition,
+                        a large proportion of teachers at both public and
+                        private school have 10-20 years of teaching experience.")),
                column(3,
                       selectInput(
                         "plot_type_years",
@@ -691,8 +704,7 @@ server <- function(input, output) {
            title = 'Number of Teachers Between 1987 and 2018',
            subtitle = 'The number of teachers has been increasing in a linear fashion over the 30 year range.',
            caption = 'Source: U.S. Department of Education, National Center for Education Statistics')
-  }
-  )
+  })
   
   # Renders images on the About tab
   
