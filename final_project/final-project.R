@@ -136,7 +136,7 @@ ui <- navbarPage(
                       align = "center"),
                br(),
                br(),
-               h3("Explore the Data"),
+               h3("Explore Data Throughout the Years"),
                column(2,
                       selectInput(
                         "plot_type_age",
@@ -237,7 +237,7 @@ ui <- navbarPage(
                       align = "center"),
                br(),
                column(12,
-                      h3('Explore the Data')),
+                      h3('Explore Data Throughout the Years')),
                column(3,
                       selectInput(
                         "plot_type_degree",
@@ -266,7 +266,7 @@ ui <- navbarPage(
 
   tabPanel("Teacher Experience",
            fluidPage(
-             titlePanel("Teacher Experience"),
+             titlePanel("Years of Teaching Experience Among U.S. Teachers in 2011-2012"),
              fluidRow(
                column(3,
                       selectInput(
@@ -288,6 +288,8 @@ ui <- navbarPage(
                         least years of teaching experience are Arizona and Utah.
                         There does not seem to be any clear trend or clusters.")),
                br(),
+               column(12,
+                      h3("Explore Data Throughout the Years")),
                column(3,
                       p("There are no clear trends when looking at the years of
                         teaching experience between public and private schools.
@@ -306,7 +308,7 @@ ui <- navbarPage(
                           "Over 20" = "d")),
                       align = "left"
                ),
-               column(7,
+               column(6,
                       plotOutput("all_years_plot"),
                       align = "center"),
              ))),
@@ -323,17 +325,10 @@ ui <- navbarPage(
                           "Private" = "b")),
                       align = "left"
                ),
-               column(7,
+               column(6,
                       plotOutput("model_plot"),
                       align = "center"),
-               br(),
-               column(6,
-                      gt_output("model_table_public")),
-               column(6,
-                      gt_output("model_table_private")),
-               br(),
-               br(),
-               column(12,
+               column(3,
                       p("To model the increase of teachers over the last ~30 years,
                         I conducted a linear regression for both teachers in public
                         and private schools. The independent variable in this case
@@ -342,7 +337,12 @@ ui <- navbarPage(
                         school teachers is 41.34, indicating an increase of 
                         ~41,340 teachers per year. The slope, or year coeffieicnt, 
                         for private school teachers is 6.340, indicating an increase
-                        of ~6,340 teachers per year."))
+                        of ~6,340 teachers per year.")),
+               br(),
+               column(6,
+                      gt_output("model_table_public")),
+               column(6,
+                      gt_output("model_table_private"))
              )))
 
   )
