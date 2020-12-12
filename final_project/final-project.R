@@ -16,6 +16,10 @@ library(shinythemes)
 library(gganimate)
 library(maps)
 library(mapproj)
+library(rstanarm)
+library(broom.mixed)
+library(gtsummary)
+library(gt)
 
 # helper.R contains the percent_map function used to plot the U.S. map figures.
 
