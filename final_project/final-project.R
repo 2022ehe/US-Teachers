@@ -201,7 +201,28 @@ ui <- navbarPage(
                column(12,
                       h2("Highest Degree Earned Among U.S. Teachers in 2011-2012"),
                       align = "left"),
-               column(3,
+               br(),
+               column(4, 
+                      p("This plot shows the relative percentages of highest
+                        degree earned for teachers in each state when compared 
+                        to other states. For example, in New York, only 2.815% 
+                        of teachers have Less than Bachelor's, but the shade of
+                        green is not the lightest, because the maximum value in 
+                        any state is 6.978%. Thus, the darkest shade representing
+                        100% for Less than Bachelor's indicates 6-7% of teachers. 
+                        The degree percentage is normalized among the states for 
+                        all the degree options."),
+                      p("I expected teachers located on the coast, especially 
+                        New York and California to have the highest percentage
+                        of higher degrees. I was therefore surprised to see that
+                        the darkest shades were not localized around the coasts.
+                        It is true that 84% of teachers have a Master's degree 
+                        in New York, but California is average (intermediate color
+                        shades) for both Master's and Education Specialist/Doctor's.
+                        It turns out that Georgia has the highest percentage of
+                        teachers with a Education Specialist/Doctorate degree: 
+                        23.606%.")),
+               column(2,
                       selectInput(
                         "var_degree",
                         "Highest Degree Earned",
@@ -214,11 +235,9 @@ ui <- navbarPage(
                column(6,
                       plotOutput("state_degree_plot"),
                       align = "center"),
-               column(3, 
-                      p("This plot shows the relative percentages of teachers
-                        in each state compared to other states who have a
-                        certain degree as the highest degree earned."),
                br(),
+               column(12,
+                      h3('Explore the Data')),
                column(3,
                       selectInput(
                         "plot_type_degree",
@@ -230,13 +249,21 @@ ui <- navbarPage(
                           "Doctor's" = "e")),
                       align = "left"
                ),
-               column(7,
+               column(6,
                       plotOutput("all_degree_plot"),
-                      #plotOutput("public_degree_plot"),
-                      #plotOutput("private_degree_plot"),
                       align = "center"),
-             )
-             )),
+               column(3,
+                      p("The overall trend in both public and private schools
+                        is an increase of more advanced degrees, as evidenced by
+                        the increase in the percentage of teachers who have a
+                        Master's, Education Specialist, and Doctorate degree."),
+                      p("I expected a larger percentage of private school teachers
+                        would have higher degrees, and that holds for the Doctorate
+                        degree. However, public schools have a consistently higher
+                        percentage of teachers with Master and Education Specialist
+                        degrees."))
+             ))
+             ),
 
   tabPanel("Teacher Experience",
            fluidPage(
@@ -268,8 +295,6 @@ ui <- navbarPage(
                ),
                column(7,
                       plotOutput("all_years_plot"),
-                      # plotOutput("public_years_plot"),
-                      # plotOutput("private_years_plot"),
                       align = "center"),
              ))),
 
@@ -288,6 +313,13 @@ ui <- navbarPage(
                column(7,
                       plotOutput("model_plot"),
                       align = "center"),
+               br(),
+               column(6,
+                      gt_output("model_table_public")),
+               column(6,
+                      gt_output("model_table_private")),
+               br(),
+               br(),
                column(12,
                       p("To model the increase of teachers over the last ~30 years,
                         I conducted a linear regression for both teachers in public
@@ -673,18 +705,24 @@ server <- function(input, output) {
          alt = "This is alternate text"
     )}, deleteFile = FALSE)
   
-  output$headshot <- renderImage({
-    # Return a list containing the filename
-    list(src = "headshot.JPG",
-         contentType = 'image/jpg',
-         width = 200,
-         height = 200,
-         alt = "This is alternate text"
-    )}, deleteFile = FALSE)
   
+  output$model_table_public <- render_gt({
+    fit_public <- stan_glm(teachers ~ year, data = public_teachers, refresh = 0)
+
+    tbl_regression(fit_public, intercept = FALSE) %>%
+      as_gt() %>%
+      tab_header(title = "Regression for Public Schools", 
+                 subtitle = "The Effect of Year on Number of Teachers in Public Schools") %>%
+      tab_source_note("Source: National Center for Educational Statistics")
+  })
   
-  output$my_table <- DT::renderDataTable({
-    public_age
+  output$model_table_private <- render_gt({
+    fit_private <- stan_glm(teachers ~ year, data = private_teachers, refresh = 0)
+    tbl_regression(fit_private, intercept = FALSE) %>%
+      as_gt() %>%
+      tab_header(title = "Regression for Private Schools", 
+                 subtitle = "The Effect of Year on Number of Teachers in Private Schools") %>%
+      tab_source_note("Source: National Center for Educational Statistics")
   })
 
 }
